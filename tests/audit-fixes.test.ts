@@ -101,6 +101,13 @@ describe('API validation', () => {
   })
 })
 
+describe('product list limit', () => {
+  it('returns at most the requested number of products', async () => {
+    const res = await fetch(`${baseUrl}/v1/products?limit=2`)
+    expect((await res.json()).products.length).toBe(2)
+  })
+})
+
 describe('avatars and R2', () => {
   it('deletes the previous avatar on re-upload and on remove', async () => {
     const { cookie } = await signIn()

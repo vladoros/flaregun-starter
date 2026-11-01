@@ -25,16 +25,17 @@ export async function boot(c) {
   await once(init, c)
 }
 
+// Log evt.type, not evt: the event holds the whole context, including c.env.
 function everyMinuteFunction(evt) {
-  console.log('MINUTE', evt, evt.detail)
+  console.log('MINUTE', evt.type, evt.detail)
 }
 
 function every5MinutesFunction(evt) {
-  console.log('5 MINUTES', evt, evt.detail)
+  console.log('5 MINUTES', evt.type, evt.detail)
 }
 
 function everyHourFunction(evt) {
-  console.log('HOUR', evt, evt.detail)
+  console.log('HOUR', evt.type, evt.detail)
 }
 
 /**

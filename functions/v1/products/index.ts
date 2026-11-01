@@ -2,7 +2,8 @@ import { Product, getProducts, productError } from '../../data/products.js'
 import { readJson } from '../../utils.js'
 
 export async function onRequestGet(c) {
-  let products = await getProducts(c)
+  const limit = Number(new URL(c.request.url).searchParams.get('limit')) || 0
+  let products = await getProducts(c, limit > 0 ? { limit: Math.min(limit, 100) } : {})
   return Response.json({ products })
 }
 

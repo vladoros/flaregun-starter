@@ -73,6 +73,10 @@ export function all(d?: any) {
       align-items: center;
     }
 
+    .g4 {
+      gap: 4px;
+    }
+
     .g8 {
       gap: 8px;
     }
