@@ -4,6 +4,7 @@ import { seedProducts } from './data/products.js'
 import { ConsoleMailer } from './services/mailer.js'
 import { nanoid } from 'nanoid'
 import { ConsoleLogger } from 'console-logger'
+import { once } from 'once'
 
 /**
  * Call this once at startup.
@@ -12,6 +13,16 @@ import { ConsoleLogger } from 'console-logger'
 export async function init(c) {
   await runMigrations(c)
   await seedProducts(c)
+}
+
+/**
+ * Scheduled and queue handlers run without the middleware, so call this first.
+ * The request middleware calls initRequest and init separately so that init errors reach the error handler.
+ * @param {*} c
+ */
+export async function boot(c) {
+  await initRequest(c)
+  await once(init, c)
 }
 
 function everyMinuteFunction(evt) {

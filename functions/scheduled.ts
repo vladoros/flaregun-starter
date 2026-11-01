@@ -1,16 +1,14 @@
-import { once } from 'once'
-import { init, initRequest } from './init.js'
+import { boot } from './init.js'
 
 /**
- * Be aware that no middleware or anything will run here.
+ * Be aware that no middleware runs here. boot() does the setup the middleware would.
  *
  * @param {*} c
  */
 export async function scheduled(c) {
   let st = new Date(c.controller.scheduledTime)
   console.log('scheduled:', c.controller.cron, st)
-  await initRequest(c)
-  await once(init, c)
+  await boot(c)
 
   await c.data.scheduler.run(c, c.controller)
 }
