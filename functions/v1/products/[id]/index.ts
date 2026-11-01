@@ -28,7 +28,7 @@ async function handleUpdate(c) {
     return Response.json({ error: { message: 'Valid product payload is required' } }, { status: 400 })
   }
 
-  const updates = {}
+  const updates: Record<string, any> = {}
   if (payload.name !== undefined) {
     const trimmed = String(payload.name).trim()
     if (!trimmed) {

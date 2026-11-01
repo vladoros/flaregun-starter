@@ -1,93 +1,12 @@
-import { LitElement, html, css } from 'lit'
-import 'material/buttons/button.js'
-import 'material/buttons/icon-button.js'
-import 'material/icon/icon.js'
-import 'material/card/card.js'
-import 'material/search/search.js'
-import 'material/chips/chip-set.js'
-import 'material/chips/chip.js'
-import 'material/badge/badge.js'
-import 'material/tooltip/tooltip.js'
-import 'material/divider/divider.js'
-import 'material/dialog/dialog.js'
-import 'material/indicators/loading.js'
-import { snack } from 'material/snackbar/snackbar.js'
+import { html } from 'lit'
 import '/components/confirm-dialog.js'
 import '/components/product-form.js'
-import { styles } from '/css/styles.js'
 import { api } from 'api'
 import state from 'state'
+import { BsElement } from '/components/bs-element.js'
+import { snack } from '/components/toast.js'
 
-export class ProductList extends LitElement {
-  static styles = [
-    styles,
-    css`
-      :host {
-        display: block;
-      }
-      .filter-toolbar {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 8px;
-      }
-      .toolbar-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-      }
-      .products-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 16px;
-        width: 100%;
-      }
-      .card-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 8px;
-      }
-      .category-tag {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 12px;
-        background: var(--md-sys-color-surface-container-high, #ece6f0);
-        color: var(--md-sys-color-on-surface-variant, #49454f);
-        text-transform: capitalize;
-        display: inline-block;
-      }
-      .sale-badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 12px;
-        background: var(--md-sys-color-tertiary-container, #ffd8e4);
-        color: var(--md-sys-color-on-tertiary-container, #31111d);
-        font-weight: 600;
-        display: inline-block;
-      }
-      .stock-tag {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-weight: 500;
-      }
-      .in-stock {
-        background: #e8f5e9;
-        color: #2e7d32;
-      }
-      .out-of-stock {
-        background: #ffebee;
-        color: #c62828;
-      }
-      md-dialog {
-        --md-dialog-container-min-width: min(520px, 92vw);
-      }
-    `,
-  ]
-
+export class ProductList extends BsElement {
   static properties = {
     products: { type: Array },
     searchQuery: { type: String },
@@ -204,10 +123,8 @@ export class ProductList extends LitElement {
 
   openCreateDialog() {
     this.editingProduct = {}
-    const form = this.renderRoot.querySelector('#dialogProductForm')
-    if (form) form.resetForm()
-    const dialog = this.renderRoot.querySelector('#productDialog')
-    if (dialog) dialog.show()
+    this.querySelector('#dialogProductForm')?.resetForm()
+    this.modal('#productDialog')?.show()
   }
 
   openEditDialog(product) {
@@ -215,13 +132,11 @@ export class ProductList extends LitElement {
       ...product,
       data: { ...(product.data || {}) },
     }
-    const dialog = this.renderRoot.querySelector('#productDialog')
-    if (dialog) dialog.show()
+    this.modal('#productDialog')?.show()
   }
 
   closeProductDialog() {
-    const dialog = this.renderRoot.querySelector('#productDialog')
-    if (dialog) dialog.close()
+    this.modal('#productDialog')?.hide()
   }
 
   handleFormSaved() {
@@ -233,74 +148,72 @@ export class ProductList extends LitElement {
     const list = this.filteredProducts
     const loggedIn = this.isLoggedIn()
     const isEditing = Boolean(this.editingProduct?.id)
+    const filters = [
+      ['all', `All (${this.products.length})`, 'list-ul'],
+      ['instock', 'In Stock', 'check-circle'],
+      ['sale', 'On Sale', 'tag'],
+    ]
 
     return html`
       <confirm-dialog id="confirmDialog"></confirm-dialog>
 
       ${loggedIn
         ? html`
-            <md-dialog id="productDialog">
-              <div slot="headline">${isEditing ? 'Edit Product' : 'New Product'}</div>
-              <div slot="content" style="padding-top: 8px;">
-                <product-form
-                  id="dialogProductForm"
-                  embedded
-                  show-cancel
-                  .product=${this.editingProduct}
-                  @saved=${this.handleFormSaved}
-                  @cancel=${this.closeProductDialog}></product-form>
+            <div class="modal fade" id="productDialog" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">${isEditing ? 'Edit Product' : 'New Product'}</h5>
+                    <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <product-form
+                      id="dialogProductForm"
+                      embedded
+                      show-cancel
+                      .product=${this.editingProduct}
+                      @saved=${this.handleFormSaved}
+                      @cancel=${this.closeProductDialog}></product-form>
+                  </div>
+                </div>
               </div>
-            </md-dialog>
+            </div>
           `
         : ''}
 
-      <div class="flex col g16 w100">
-        <!-- Search, Filter Chips, and Primary Action -->
-        <div class="filter-toolbar">
-          <md-search
+      <div class="flex fcol g16 w100">
+        <div class="flex fcol g12">
+          <input
+            type="search"
+            class="form-control"
             placeholder="Search products by title, category, or description..."
-            @input=${this.handleSearch}
-            class="w100"></md-search>
+            @input=${this.handleSearch} />
 
-          <div class="toolbar-row">
-            <md-chip-set>
-              <md-chip
-                type="filter"
-                label="All (${this.products.length})"
-                ?selected=${this.activeFilter === 'all'}
-                @click=${() => this.setFilter('all')}>
-                <md-icon slot="icon">view_list</md-icon>
-              </md-chip>
-              <md-chip
-                type="filter"
-                label="In Stock"
-                ?selected=${this.activeFilter === 'instock'}
-                @click=${() => this.setFilter('instock')}>
-                <md-icon slot="icon">check_circle</md-icon>
-              </md-chip>
-              <md-chip
-                type="filter"
-                label="On Sale"
-                ?selected=${this.activeFilter === 'sale'}
-                @click=${() => this.setFilter('sale')}>
-                <md-icon slot="icon">local_offer</md-icon>
-              </md-chip>
-            </md-chip-set>
+          <div class="flex jcsb aic flexw g12">
+            <div class="btn-group" role="group" aria-label="Filter products">
+              ${filters.map(
+                ([key, label, icon]) => html`
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary ${this.activeFilter === key ? 'active' : ''}"
+                    aria-pressed=${this.activeFilter === key}
+                    @click=${() => this.setFilter(key)}>
+                    <i class="bi bi-${icon}"></i> ${label}
+                  </button>
+                `,
+              )}
+            </div>
 
             <div class="flex aic g8">
               ${loggedIn
                 ? html`
-                    <md-button color="filled" @click=${() => this.openCreateDialog()}>
-                      <md-icon slot="icon">add</md-icon>
-                      New Product
-                    </md-button>
+                    <button type="button" class="btn btn-primary" @click=${() => this.openCreateDialog()}>
+                      <i class="bi bi-plus-lg"></i> New Product
+                    </button>
                   `
                 : html`
-                    <a href="/signin">
-                      <md-button color="tonal">
-                        <md-icon slot="icon">login</md-icon>
-                        Sign in to add or edit
-                      </md-button>
+                    <a href="/signin" class="btn btn-outline-secondary">
+                      <i class="bi bi-box-arrow-in-right"></i> Sign in to add or edit
                     </a>
                   `}
             </div>
@@ -309,16 +222,16 @@ export class ProductList extends LitElement {
 
         ${this.loading
           ? html`
-              <div class="flex col aic jcc p40 g16">
-                <md-loading size="48" contained></md-loading>
-                <div class="text-muted">Loading products...</div>
+              <div class="flex fcol aic jcc p40 g16">
+                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                <div class="text-body-secondary">Loading products...</div>
               </div>
             `
           : list.length === 0
             ? html`
-                <md-card class="p24 text-center">
-                  <div class="flex col aic g12 p16">
-                    <div class="text-muted">
+                <div class="card p24 text-center">
+                  <div class="flex fcol aic g12 p16">
+                    <div class="text-body-secondary">
                       ${this.searchQuery || this.activeFilter !== 'all'
                         ? 'No products match your search or filter.'
                         : loggedIn
@@ -327,88 +240,85 @@ export class ProductList extends LitElement {
                     </div>
                     ${loggedIn && !this.searchQuery && this.activeFilter === 'all'
                       ? html`
-                          <md-button color="filled" @click=${() => this.openCreateDialog()}>
-                            <md-icon slot="icon">add</md-icon>
-                            Create First Product
-                          </md-button>
+                          <button type="button" class="btn btn-primary" @click=${() => this.openCreateDialog()}>
+                            <i class="bi bi-plus-lg"></i> Create First Product
+                          </button>
                         `
                       : ''}
                   </div>
-                </md-card>
+                </div>
               `
             : html`
-                <div class="products-grid">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
                   ${list.map((p) => {
                     const isOutOfStock = p.data?.inStock === false
                     const discount = p.data?.discount || 0
                     const category = p.data?.category
 
                     return html`
-                      <md-card class="p16 flex col jcsb w100 g12" style="box-sizing: border-box;">
-                        <div class="flex col g8">
-                          <div class="card-header">
-                            <div class="flex col g4">
-                              <div class="title-large" style="font-weight: 600;">
+                      <div class="card p16 flex fcol jcsb w100 g12">
+                        <div class="flex fcol g8">
+                          <div class="flex jcsb g8">
+                            <div class="flex fcol g4">
+                              <div class="fs-5 fw-semibold">
                                 <a href="/products/${p.id}">${p.name}</a>
                               </div>
                               <div class="flex g8 aic flexw mt4">
-                                ${category ? html`<span class="category-tag">${category}</span>` : ''}
-                                <span class="stock-tag ${isOutOfStock ? 'out-of-stock' : 'in-stock'}">
+                                ${category
+                                  ? html`<span class="badge rounded-pill text-bg-secondary text-capitalize">${category}</span>`
+                                  : ''}
+                                <span class="badge rounded-pill text-bg-${isOutOfStock ? 'danger' : 'success'}">
                                   ${isOutOfStock ? 'Out of stock' : 'In stock'}
                                 </span>
-                                ${discount > 0 ? html`<span class="sale-badge">${discount}% OFF</span>` : ''}
+                                ${discount > 0
+                                  ? html`<span class="badge rounded-pill text-bg-warning">${discount}% OFF</span>`
+                                  : ''}
                               </div>
                             </div>
 
                             ${loggedIn
                               ? html`
                                   <div class="flex aic g4">
-                                    <md-tooltip text="Edit product">
-                                      <md-icon-button @click=${() => this.openEditDialog(p)}>
-                                        <md-icon>edit</md-icon>
-                                      </md-icon-button>
-                                    </md-tooltip>
-                                    <md-tooltip text="Delete product">
-                                      <md-icon-button class="error" @click=${() => this.deleteProduct(p.id)}>
-                                        <md-icon>delete</md-icon>
-                                      </md-icon-button>
-                                    </md-tooltip>
+                                    <button
+                                      type="button"
+                                      class="btn btn-sm btn-outline-secondary"
+                                      title="Edit product"
+                                      aria-label="Edit product"
+                                      @click=${() => this.openEditDialog(p)}>
+                                      <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-sm btn-outline-danger"
+                                      title="Delete product"
+                                      aria-label="Delete product"
+                                      @click=${() => this.deleteProduct(p.id)}>
+                                      <i class="bi bi-trash"></i>
+                                    </button>
                                   </div>
                                 `
                               : ''}
                           </div>
 
-                          ${p.description
-                            ? html`<div style="color: var(--md-sys-color-on-surface-variant); line-height: 1.5;">
-                                ${p.description}
-                              </div>`
-                            : ''}
+                          ${p.description ? html`<div class="text-body-secondary">${p.description}</div>` : ''}
                         </div>
 
-                        <div
-                          class="flex aic jcsb mt8 pt12"
-                          style="border-top: 1px solid var(--md-sys-color-outline-variant, #ece6f0);">
+                        <div class="flex aic jcsb mt8 pt12 border-top">
                           <div class="flex aic g8">
-                            <span style="font-weight: 700; font-size: 1.25rem; color: var(--md-sys-color-primary);">
-                              $${Number(p.price).toFixed(2)}
-                            </span>
+                            <span class="fs-5 fw-bold text-primary">$${Number(p.price).toFixed(2)}</span>
                             ${discount > 0 && discount < 100
                               ? html`
-                                  <span
-                                    style="text-decoration: line-through; color: var(--md-sys-color-outline); font-size: 0.9rem;">
+                                  <span class="text-decoration-line-through text-body-secondary small">
                                     $${(p.price / (1 - discount / 100)).toFixed(2)}
                                   </span>
                                 `
                               : ''}
                           </div>
-                          <a href="/products/${p.id}">
-                            <md-button color="text" size="small">
-                              View Details
-                              <md-icon slot="icon">arrow_forward</md-icon>
-                            </md-button>
+                          <a href="/products/${p.id}" class="btn btn-sm btn-link">
+                            View Details <i class="bi bi-arrow-right"></i>
                           </a>
                         </div>
-                      </md-card>
+                      </div>
                     `
                   })}
                 </div>
@@ -418,13 +328,13 @@ export class ProductList extends LitElement {
   }
 
   async deleteProduct(id) {
-    const dialog = this.renderRoot.querySelector('#confirmDialog')
+    const dialog = this.querySelector('#confirmDialog')
     const confirmed = await dialog.confirm({
       headline: 'Delete Product',
       message: 'Are you sure you want to delete this product?',
       confirmText: 'Delete',
       destructive: true,
-      icon: 'delete',
+      icon: 'trash',
     })
     if (!confirmed) return
 
@@ -432,12 +342,12 @@ export class ProductList extends LitElement {
       method: 'DELETE',
     })
     if (response.ok) {
-      snack('Product deleted successfully', { showCloseIcon: true })
+      snack('Product deleted successfully')
       this.products = this.products.filter((p) => p.id !== id)
       this.requestUpdate()
     } else {
       console.error('Failed to delete product')
-      snack('Failed to delete product.', { showCloseIcon: true })
+      snack('Failed to delete product.')
     }
   }
 }

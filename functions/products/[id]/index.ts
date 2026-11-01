@@ -21,7 +21,7 @@ function render(d) {
       import '/components/product-detail.js'
     </script>
 
-    <div class="flex col g20 p16" style="max-width: 960px; margin: 0 auto;">
+    <div class="flex fcol g20 p16" style="max-width: 960px; margin: 0 auto;">
       <product-detail
         product="${productAttr}"
         user="${userAttr}"

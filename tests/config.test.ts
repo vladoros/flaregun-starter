@@ -3,7 +3,7 @@ import configFn from '../cloudflare.config.ts'
 
 describe('cloudflare.config.ts', () => {
   it('uses worker name as prefix for bindings in production', () => {
-    const config = configFn({ isPreview: false })
+    const config = configFn({ isPreview: false } as any)
     const workerName = config.worker.name
 
     expect(workerName).toBe('flaregun')
@@ -15,7 +15,7 @@ describe('cloudflare.config.ts', () => {
   })
 
   it('uses worker name as prefix with -preview suffix in preview', () => {
-    const config = configFn({ isPreview: true })
+    const config = configFn({ isPreview: true } as any)
     const workerName = config.worker.name
 
     expect(workerName).toBe('flaregun')
@@ -27,7 +27,7 @@ describe('cloudflare.config.ts', () => {
   })
 
   it('configures observability with issue detection enabled', () => {
-    const config = configFn({ isPreview: false })
+    const config = configFn({ isPreview: false } as any)
     expect(config.worker.observability).toEqual({
       enabled: true,
       headSamplingRate: 1,

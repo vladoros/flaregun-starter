@@ -1,112 +1,11 @@
-import { LitElement, html, css } from 'lit'
-import 'material/text/text-field.js'
-import 'material/buttons/button.js'
-import 'material/buttons/icon-button.js'
-import 'material/card/card.js'
-import 'material/icon/icon.js'
-import 'material/divider/divider.js'
+import { html } from 'lit'
 import '/components/confirm-dialog.js'
-import { styles } from '/css/styles.js'
 import { api } from 'api'
 import state from 'state'
 import { startRegistration } from 'passkeys/public/js/auth.js'
+import { BsElement } from '/components/bs-element.js'
 
-export class SettingsPage extends LitElement {
-  static styles = [
-    styles,
-    css`
-      :host {
-        display: block;
-        width: 100%;
-        max-width: 680px;
-        margin: 0 auto;
-      }
-      .settings-section {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      .avatar-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-      .avatar-preview {
-        width: 96px;
-        height: 96px;
-        border-radius: 50%;
-        border: 2px solid var(--md-sys-color-outline-variant, #ccc);
-        background: var(--md-sys-color-primary-container, #eaddff);
-        color: var(--md-sys-color-on-primary-container, #21005d);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        font-weight: 600;
-        overflow: hidden;
-        flex-shrink: 0;
-      }
-      .avatar-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .passkey-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-radius: 8px;
-        background: var(--md-sys-color-surface-container, rgba(0, 0, 0, 0.04));
-        border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
-      }
-      .passkey-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .passkey-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--md-sys-color-primary-container, #eaddff);
-        color: var(--md-sys-color-on-primary-container, #21005d);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 12px;
-        background: var(--md-sys-color-secondary-container, #e8def8);
-        color: var(--md-sys-color-on-secondary-container, #1d192b);
-        font-weight: 500;
-        display: inline-block;
-      }
-      .feedback-msg {
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-      }
-      .feedback-success {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid #c8e6c9;
-      }
-      .feedback-error {
-        background: #ffebee;
-        color: #c62828;
-        border: 1px solid #ffcdd2;
-      }
-      md-icon-button.error {
-        --md-icon-button-icon-color: var(--error-color, var(--md-sys-color-error, #ba1a1a));
-      }
-    `,
-  ]
-
+export class SettingsPage extends BsElement {
   static properties = {
     user: { type: Object },
     passkeys: { type: Array },
@@ -132,6 +31,8 @@ export class SettingsPage extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback()
+    this.classList.add('d-block', 'w-100', 'mx-auto')
+    this.style.maxWidth = '680px'
     this.initUser()
     this.fetchPasskeys()
     if (!this.user?.email) {
@@ -185,7 +86,7 @@ export class SettingsPage extends LitElement {
   }
 
   triggerAvatarUpload() {
-    const input = this.renderRoot.querySelector('#avatar-file-input')
+    const input = this.querySelector('#avatar-file-input')
     if (input) {
       input.click()
     }
@@ -223,7 +124,7 @@ export class SettingsPage extends LitElement {
       this.avatarMessage = { type: 'error', text: err.message || 'Failed to upload avatar' }
     } finally {
       this.loadingAvatar = false
-      const input = this.renderRoot?.querySelector('#avatar-file-input')
+      const input = this.querySelector('#avatar-file-input')
       if (input) {
         input.value = ''
       }
@@ -231,13 +132,13 @@ export class SettingsPage extends LitElement {
   }
 
   async removeAvatar() {
-    const dialog = this.renderRoot.querySelector('#confirmDialog')
+    const dialog = this.querySelector('#confirmDialog')
     const confirmed = await dialog.confirm({
       headline: 'Remove Avatar',
       message: 'Are you sure you want to remove your profile photo?',
       confirmText: 'Remove',
       destructive: true,
-      icon: 'delete',
+      icon: 'trash',
     })
     if (!confirmed) return
 
@@ -268,7 +169,7 @@ export class SettingsPage extends LitElement {
   }
 
   async saveProfile() {
-    const nameField = this.renderRoot.querySelector('#name-field')
+    const nameField = this.querySelector('#name-field')
     const name = nameField ? nameField.value.trim() : ''
 
     this.loadingProfile = true
@@ -329,13 +230,13 @@ export class SettingsPage extends LitElement {
   }
 
   async deletePasskey(passkeyId) {
-    const dialog = this.renderRoot.querySelector('#confirmDialog')
+    const dialog = this.querySelector('#confirmDialog')
     const confirmed = await dialog.confirm({
       headline: 'Remove Passkey',
       message: 'Are you sure you want to remove this passkey? You will no longer be able to sign in with it.',
       confirmText: 'Remove',
       destructive: true,
-      icon: 'delete',
+      icon: 'trash',
     })
     if (!confirmed) return
 
@@ -352,6 +253,14 @@ export class SettingsPage extends LitElement {
     }
   }
 
+  feedback(msg) {
+    return msg
+      ? html`<div class="alert alert-${msg.type === 'success' ? 'success' : 'danger'} py-2 mb-0" role="alert">
+          ${msg.text}
+        </div>`
+      : ''
+  }
+
   render() {
     const user = this.user || {}
     const initial = (user.name || user.email || 'U').charAt(0).toUpperCase()
@@ -360,170 +269,158 @@ export class SettingsPage extends LitElement {
     return html`
       <confirm-dialog id="confirmDialog"></confirm-dialog>
 
-      <div class="flex col g24 w100">
-        <div class="headline-medium">Account Settings</div>
+      <div class="flex fcol g24 w100">
+        <h1 class="fs-3 mb-0">Account Settings</h1>
 
         <!-- Section 1: Profile & Avatar -->
-        <md-card class="p24 w100" style="box-sizing: border-box;">
-          <div class="settings-section">
-            <div class="title-large">Profile</div>
-            <div class="text-muted small">Manage your public avatar and profile details.</div>
+        <div class="card p24 w100">
+          <div class="flex fcol g16">
+            <div class="fs-5">Profile</div>
+            <div class="text-body-secondary small">Manage your public avatar and profile details.</div>
 
-            ${
-              this.avatarMessage
-                ? html`<div class="feedback-msg feedback-${this.avatarMessage.type}">${this.avatarMessage.text}</div>`
-                : ''
-            }
+            ${this.feedback(this.avatarMessage)}
 
-            <div class="avatar-wrapper mt8">
-              <div class="avatar-preview">
-                ${
-                  imageUrl
-                    ? html`<img src="${imageUrl}" alt="${user.name || 'User Avatar'}" />`
-                    : html`<span>${initial}</span>`
-                }
+            <div class="flex aic g20 mt8">
+              <div
+                class="rounded-circle border bg-primary-subtle text-primary-emphasis flex aic jcc fs-2 fw-semibold overflow-hidden flex-shrink-0"
+                style="width: 96px; height: 96px;">
+                ${imageUrl
+                  ? html`<img
+                      src="${imageUrl}"
+                      class="w-100 h-100 object-fit-cover"
+                      alt="${user.name || 'User Avatar'}" />`
+                  : html`<span>${initial}</span>`}
               </div>
-              <div class="flex col g8">
+              <div class="flex fcol g8">
                 <input
                   type="file"
                   id="avatar-file-input"
                   accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
-                  style="display: none;"
+                  hidden
                   @change=${this.handleAvatarChange} />
                 <div class="flex g8 flexw">
-                  <md-button type="button" @click=${this.triggerAvatarUpload} ?disabled=${this.loadingAvatar}>
-                    <md-icon slot="icon">cloud_upload</md-icon>
-                    ${this.loadingAvatar ? 'Uploading...' : 'Upload New Photo'}
-                  </md-button>
-                  ${
-                    imageUrl
-                      ? html`
-                          <md-button
-                            type="button"
-                            color="outlined"
-                            class="error"
-                            @click=${this.removeAvatar}
-                            ?disabled=${this.loadingAvatar}>
-                            <md-icon slot="icon">delete</md-icon>
-                            Remove
-                          </md-button>
-                        `
-                      : ''
-                  }
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    @click=${this.triggerAvatarUpload}
+                    ?disabled=${this.loadingAvatar}>
+                    <i class="bi bi-cloud-upload"></i> ${this.loadingAvatar ? 'Uploading...' : 'Upload New Photo'}
+                  </button>
+                  ${imageUrl
+                    ? html`
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger"
+                          @click=${this.removeAvatar}
+                          ?disabled=${this.loadingAvatar}>
+                          <i class="bi bi-trash"></i> Remove
+                        </button>
+                      `
+                    : ''}
                 </div>
-                <div class="text-muted small">Allowed formats: JPG, PNG, WEBP, AVIF, GIF. Max size 10MB.</div>
+                <div class="text-body-secondary small">Allowed formats: JPG, PNG, WEBP, AVIF, GIF. Max size 10MB.</div>
               </div>
             </div>
 
-            <md-divider class="mt8 mb8"></md-divider>
+            <hr class="my-2" />
 
-            ${
-              this.profileMessage
-                ? html`<div class="feedback-msg feedback-${this.profileMessage.type}">${this.profileMessage.text}</div>`
-                : ''
-            }
+            ${this.feedback(this.profileMessage)}
 
             <form
               id="profile-form"
-              class="flex col g16 w100"
+              class="flex fcol g16 w100"
               @submit=${(e) => {
                 e.preventDefault()
                 this.saveProfile()
               }}>
-              <md-text-field
-                id="name-field"
-                label="Full Name"
-                value="${user.name || ''}"
-                placeholder="Enter your full name"></md-text-field>
+              <label class="form-label mb-0">
+                Full Name
+                <input
+                  class="form-control mt-1"
+                  id="name-field"
+                  .value=${user.name || ''}
+                  placeholder="Enter your full name" />
+              </label>
 
-              <md-text-field
-                id="email-field"
-                label="Email"
-                value="${user.email || ''}"
-                disabled
-                supporting-text="Email address cannot be changed"></md-text-field>
+              <label class="form-label mb-0">
+                Email
+                <input class="form-control mt-1" id="email-field" .value=${user.email || ''} disabled />
+                <div class="form-text">Email address cannot be changed</div>
+              </label>
 
               <div class="flex jce mt8">
-                <md-button type="button" @click=${this.saveProfile} ?disabled=${this.loadingProfile}>
+                <button type="button" class="btn btn-primary" @click=${this.saveProfile} ?disabled=${this.loadingProfile}>
                   ${this.loadingProfile ? 'Saving...' : 'Save Profile'}
-                </md-button>
+                </button>
               </div>
             </form>
           </div>
-        </md-card>
+        </div>
 
         <!-- Section 2: Passkeys & Security -->
-        <md-card class="p24 w100" style="box-sizing: border-box;">
-          <div class="settings-section">
+        <div class="card p24 w100">
+          <div class="flex fcol g16">
             <div class="flex jcsb aic flexw g8">
               <div>
-                <div class="title-large">Passkeys</div>
-                <div class="text-muted small mt4">
+                <div class="fs-5">Passkeys</div>
+                <div class="text-body-secondary small mt4">
                   Passkeys provide fast and secure sign-in using biometric authentication or security keys.
                 </div>
               </div>
-              <md-button type="button" @click=${this.addPasskey}>
-                <md-icon slot="icon">add</md-icon>
-                Add Passkey
-              </md-button>
+              <button type="button" class="btn btn-primary" @click=${this.addPasskey}>
+                <i class="bi bi-plus-lg"></i> Add Passkey
+              </button>
             </div>
 
-            ${
-              this.passkeyMessage
-                ? html`<div class="feedback-msg feedback-${this.passkeyMessage.type}">${this.passkeyMessage.text}</div>`
-                : ''
-            }
+            ${this.feedback(this.passkeyMessage)}
 
-            <div class="flex col g12 mt8">
-              ${
-                this.loadingPasskeys
-                  ? html`<div class="text-muted p16 text-center">Loading passkeys...</div>`
-                  : this.passkeys.length === 0
-                    ? html`
-                        <div
-                          class="text-muted p16 text-center"
-                          style="background: var(--md-sys-color-surface-container, rgba(0,0,0,0.02)); border-radius: 8px;">
-                          No passkeys configured yet. Add one to sign in seamlessly without entering your email every
-                          time.
-                        </div>
-                      `
-                    : this.passkeys.map(
-                        (pk) => html`
-                          <div class="passkey-item">
-                            <div class="passkey-info">
-                              <div class="passkey-icon">
-                                <md-icon>fingerprint</md-icon>
-                              </div>
-                              <div class="flex col g4">
-                                <div style="font-weight: 500; font-size: 14px;">${pk.name || 'Passkey'}</div>
-                                <div class="flex g8 aic flexw">
-                                  <span class="badge"
-                                    >${pk.deviceType === 'multiDevice' ? 'Synced Passkey' : 'Security Key'}</span
-                                  >
-                                  ${
-                                    pk.createdAt
-                                      ? html`<span class="text-muted small"
-                                          >Added on ${new Date(pk.createdAt).toLocaleDateString()}</span
-                                        >`
-                                      : ''
-                                  }
-                                </div>
+            <div class="flex fcol g12 mt8">
+              ${this.loadingPasskeys
+                ? html`<div class="text-body-secondary p16 text-center">Loading passkeys...</div>`
+                : this.passkeys.length === 0
+                  ? html`
+                      <div class="text-body-secondary p16 text-center bg-body-tertiary rounded">
+                        No passkeys configured yet. Add one to sign in seamlessly without entering your email every
+                        time.
+                      </div>
+                    `
+                  : this.passkeys.map(
+                      (pk) => html`
+                        <div class="flex aic jcsb px-3 py-2 rounded bg-body-tertiary border">
+                          <div class="flex aic g12">
+                            <div
+                              class="rounded-circle bg-primary-subtle text-primary-emphasis flex aic jcc flex-shrink-0"
+                              style="width: 40px; height: 40px;">
+                              <i class="bi bi-fingerprint"></i>
+                            </div>
+                            <div class="flex fcol g4">
+                              <div class="fw-medium">${pk.name || 'Passkey'}</div>
+                              <div class="flex g8 aic flexw">
+                                <span class="badge rounded-pill text-bg-secondary">
+                                  ${pk.deviceType === 'multiDevice' ? 'Synced Passkey' : 'Security Key'}
+                                </span>
+                                ${pk.createdAt
+                                  ? html`<span class="text-body-secondary small"
+                                      >Added on ${new Date(pk.createdAt).toLocaleDateString()}</span
+                                    >`
+                                  : ''}
                               </div>
                             </div>
-                            <md-icon-button
-                              class="error"
-                              title="Remove Passkey"
-                              aria-label="Remove Passkey"
-                              @click=${() => this.deletePasskey(pk.id)}>
-                              <md-icon>delete</md-icon>
-                            </md-icon-button>
                           </div>
-                        `,
-                      )
-              }
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            title="Remove Passkey"
+                            aria-label="Remove Passkey"
+                            @click=${() => this.deletePasskey(pk.id)}>
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      `,
+                    )}
             </div>
           </div>
-        </md-card>
+        </div>
       </div>
     `
   }

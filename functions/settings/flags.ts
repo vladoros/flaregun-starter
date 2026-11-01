@@ -22,7 +22,7 @@ function render(d) {
       import '/components/flags-page.js'
     </script>
 
-    <div class="flex col aic jcc p16 mt20">
+    <div class="flex fcol aic jcc p16 mt20">
       <flags-page user="${stringifyAttribute(d.user)}"></flags-page>
     </div>
   `

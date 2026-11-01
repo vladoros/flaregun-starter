@@ -25,7 +25,7 @@ export async function setup() {
     }
 
     try {
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const req = http.get(`http://localhost:${port}/`, (res) => {
           res.resume()
           resolve()

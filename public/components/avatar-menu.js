@@ -1,83 +1,11 @@
-import { LitElement, html, css } from 'lit'
-import 'material/menu/menu.js'
-import 'material/menu/menu-item.js'
-import 'material/divider/divider.js'
-import 'material/icon/icon.js'
-import 'material/buttons/button.js'
+import { html } from 'lit'
+import 'bootstrap'
 import { api } from 'api'
 import state from 'state'
 import { signOut } from './auth-utils.js'
-import { styles } from '/css/styles.js'
+import { BsElement } from '/components/bs-element.js'
 
-export class AvatarMenu extends LitElement {
-  static styles = [
-    styles,
-    css`
-      :host {
-        display: inline-block;
-        position: relative;
-      }
-      .avatar-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        border: 2px solid var(--md-sys-color-outline-variant, #ccc);
-        background: var(--md-sys-color-primary-container, #eaddff);
-        color: var(--md-sys-color-on-primary-container, #21005d);
-        cursor: pointer;
-        padding: 0;
-        overflow: hidden;
-        font-weight: 600;
-        font-size: 15px;
-        transition:
-          box-shadow 0.2s,
-          border-color 0.2s,
-          transform 0.1s;
-      }
-      .avatar-btn:hover {
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        border-color: var(--md-sys-color-primary, #6750a4);
-      }
-      .avatar-btn:active {
-        transform: scale(0.96);
-      }
-      .avatar-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .menu-header {
-        padding: 12px 16px;
-        min-width: 200px;
-        box-sizing: border-box;
-      }
-      .menu-name {
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--md-sys-color-on-surface, #1c1b1f);
-      }
-      .menu-email {
-        font-size: 12px;
-        color: var(--md-sys-color-on-surface-variant, #49454f);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        margin-top: 2px;
-      }
-      a.menu-link {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-      }
-      md-menu-item {
-        cursor: pointer;
-      }
-    `,
-  ]
-
+export class AvatarMenu extends BsElement {
   static properties = {
     user: { type: Object },
   }
@@ -138,14 +66,6 @@ export class AvatarMenu extends LitElement {
     return state.get('user') || {}
   }
 
-  toggleMenu(e) {
-    e?.stopPropagation()
-    const menu = this.renderRoot.querySelector('#avatar-menu')
-    if (menu) {
-      menu.open = !menu.open
-    }
-  }
-
   async handleSignOut(e) {
     e?.preventDefault()
     state.delete('user')
@@ -154,11 +74,7 @@ export class AvatarMenu extends LitElement {
 
   render() {
     if (!this.isLoggedIn()) {
-      return html`
-        <a href="/signin" class="menu-link">
-          <md-button color="outlined">Sign In</md-button>
-        </a>
-      `
+      return html`<a href="/signin" class="btn btn-outline-primary">Sign In</a>`
     }
 
     const user = this.getUser()
@@ -166,40 +82,36 @@ export class AvatarMenu extends LitElement {
     const initial = (user.name || user.email || 'U').charAt(0).toUpperCase()
 
     return html`
-      <div style="position: relative; display: inline-block;">
+      <div class="dropdown">
         <button
-          id="avatar-anchor"
-          class="avatar-btn"
-          @click=${this.toggleMenu}
-          aria-label="User account menu"
-          aria-haspopup="true">
+          class="btn btn-primary rounded-circle p-0 overflow-hidden fw-semibold"
+          style="width: 38px; height: 38px;"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="User account menu">
           ${
             imageUrl
-              ? html`<img src="${imageUrl}" class="avatar-img" alt="${user.name || 'User Avatar'}" />`
+              ? html`<img src="${imageUrl}" class="w-100 h-100 object-fit-cover" alt="${user.name || 'User Avatar'}" />`
               : html`<span>${initial}</span>`
           }
         </button>
 
-        <md-menu id="avatar-menu" anchor="avatar-anchor" anchor-corner="end-end" menu-corner="start-end">
-          <div class="menu-header">
-            <div class="menu-name">${user.name || 'Account'}</div>
-            <div class="menu-email">${user.email || ''}</div>
-          </div>
-          <md-divider></md-divider>
-          <a href="/settings" class="menu-link">
-            <md-menu-item>
-              <md-icon slot="start">settings</md-icon>
-              <div slot="headline">Settings</div>
-            </md-menu-item>
-          </a>
-          <md-divider></md-divider>
-          <a href="/signout" class="menu-link" @click=${this.handleSignOut}>
-            <md-menu-item>
-              <md-icon slot="start">logout</md-icon>
-              <div slot="headline">Sign out</div>
-            </md-menu-item>
-          </a>
-        </md-menu>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li class="px-3 py-2" style="min-width: 200px;">
+            <div class="fw-semibold">${user.name || 'Account'}</div>
+            <div class="small text-body-secondary text-truncate">${user.email || ''}</div>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <a href="/settings" class="dropdown-item flex aic g8"><i class="bi bi-gear"></i>Settings</a>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <a href="/signout" class="dropdown-item flex aic g8" @click=${this.handleSignOut}>
+              <i class="bi bi-box-arrow-right"></i>Sign out
+            </a>
+          </li>
+        </ul>
       </div>
     `
   }

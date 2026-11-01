@@ -14,25 +14,7 @@ export async function onRequestGet(c) {
 
 export function root(d) {
   return css`
-    @import url(light.css);
-    @import url(dark.css) (prefers-color-scheme: dark);
-
-    :root {
-      --md-ref-typeface-brand: 'Google Sans Flex', sans-serif;
-      --md-ref-typeface-plain: 'Google Sans Flex', sans-serif;
-
-      font-family: var(--md-ref-typeface-plain);
-      font-size: 14px;
-
-      background: var(--md-sys-color-background);
-      color: var(--md-sys-color-on-background);
-
-      --md-card-container-color: var(--md-sys-color-surface, #ffffff);
-    }
-
     body {
-      background: var(--md-sys-color-background, #f8f9fa);
-      margin: 0;
       min-height: 100vh;
     }
 
@@ -41,54 +23,23 @@ export function root(d) {
     }
 
     .topnav a {
-      color: var(--md-sys-color-on-background);
-    }
-
-    .nav-item {
-      font-weight: 500;
-      font-size: 14px;
-      color: var(--md-sys-color-on-surface-variant);
-      padding: 6px 12px;
-      border-radius: 8px;
       text-decoration: none;
-      transition:
-        background-color 0.15s ease,
-        color 0.15s ease;
-    }
-
-    .nav-item:hover {
-      background: var(--md-sys-color-surface-container-high, rgba(0, 0, 0, 0.05));
-      color: var(--md-sys-color-on-surface);
-    }
-
-    .nav-item.active {
-      background: var(--md-sys-color-secondary-container, #e8def8);
-      color: var(--md-sys-color-on-secondary-container, #1d192b);
     }
 
     ${all(d)}
   `
 }
 
-export function all(d) {
+export function all(d?: any) {
   return css`
-    a {
-      color: var(--md-sys-color-secondary);
-      text-decoration: none;
-    }
-
-    .slightly-opaque {
-      background-color: rgb(0 0 0 / 0.3);
-    }
-
     .green,
     .success {
-      color: var(--success-color, #2e7d32);
+      color: var(--bs-success);
     }
 
     .red,
     .error {
-      color: var(--error-color, var(--md-sys-color-error, #ba1a1a));
+      color: var(--bs-danger);
     }
 
     .flex {
@@ -108,7 +59,7 @@ export function all(d) {
       display: grid;
     }
 
-    /* https://m3.material.io/foundations/layout/applying-layout/window-size-classes */
+    /* Medium window breakpoint */
     @media (width < 840px) {
       .flexr {
         flex-direction: column;
@@ -146,11 +97,11 @@ export function all(d) {
       }
     }
 
-    .row {
+    .frow {
       flex-direction: row;
     }
 
-    .col {
+    .fcol {
       flex-direction: column;
     }
 
@@ -294,14 +245,6 @@ export function all(d) {
       width: 100%;
     }
 
-    .shadow {
-      box-shadow: 0 0 3px rgba(255, 255, 255, 0.15) !important;
-    }
-
-    .bg-light {
-      background-color: #151c2b !important;
-    }
-
     .br4 {
       border-radius: 4px;
     }
@@ -315,31 +258,6 @@ export function all(d) {
     .wh36 {
       height: 36px;
       width: 36px;
-    }
-
-    .text-muted {
-      color: #8492a6 !important;
-    }
-    .text-center {
-      text-align: center;
-    }
-    .text-end {
-      text-align: end;
-    }
-    .small {
-      font-size: smaller;
-    }
-
-    .card {
-      background-color: var(--md-card-container-color, var(--md-sys-color-surface, #ffffff));
-      color: var(--md-sys-color-on-surface);
-      border-radius: var(--md-card-container-shape, 12px);
-      border: var(--md-card-outline-width, 1px) solid
-        var(--md-card-outline-color, var(--md-sys-color-outline-variant, #cac4d0));
-    }
-
-    md-card {
-      --md-card-container-color: var(--md-sys-color-surface, #ffffff);
     }
 
     ${typography()}

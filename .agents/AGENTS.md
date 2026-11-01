@@ -4,7 +4,7 @@ Guidelines and instructions for using the `flaregun` library on Cloudflare.
 
 ## Cloudflare Request Context (`c`) & `c.data`
 
-Every HTTP request, scheduled cron event, and queue batch runs through `flaregun`'s worker router ([`src/worker.js`](../src/worker.js)) and request initialization ([`functions/_middleware.js`](../functions/_middleware.js) and [`functions/init.js`](../functions/init.js)).
+Every HTTP request, scheduled cron event, and queue batch runs through `flaregun`'s worker router ([`src/worker.ts`](../src/worker.ts)) and request initialization ([`functions/_middleware.ts`](../functions/_middleware.ts) and [`functions/init.ts`](../functions/init.ts)).
 
 ### Guaranteed Properties on `c`
 
@@ -16,11 +16,11 @@ Every HTTP request, scheduled cron event, and queue batch runs through `flaregun
 - `c.passThroughOnException()`: Bound `ctx.passThroughOnException` function.
 - `c.next(nextReq?, nextEnv?)`: Advances to the next middleware or route handler in the chain.
 - `c.data`: Shared per-request context object, always initialized and populated before any route handler executes.
-- *(In [`functions/scheduled.js`](../functions/scheduled.js), `c.controller` is provided; in [`functions/queue.js`](../functions/queue.js), `c.batch` is provided).*
+- *(In [`functions/scheduled.ts`](../functions/scheduled.ts), `c.controller` is provided; in [`functions/queue.ts`](../functions/queue.ts), `c.batch` is provided).*
 
 ### Pre-Initialized Properties on `c.data`
 
-`initRequest(c)` and `once(init, c)` run on every request in [`functions/_middleware.js`](../functions/_middleware.js) (and [`functions/scheduled.js`](../functions/scheduled.js)), guaranteeing the following properties on `c.data`:
+`initRequest(c)` and `once(init, c)` run on every request in [`functions/_middleware.ts`](../functions/_middleware.ts) (and [`functions/scheduled.ts`](../functions/scheduled.ts)), guaranteeing the following properties on `c.data`:
 
 - `c.data.d1`: Pre-initialized `D1` database wrapper (`new D1(c.env.D1)`).
 - `c.data.kv`: Pre-initialized `KV` storage wrapper (`new KV(c.env.KV)`).
@@ -165,44 +165,16 @@ Triggers scheduled functions at custom intervals using a single Cloudflare minut
 
 ---
 
-## Material 3 Web Components (`material-esm`)
+## Bootstrap 5 UI
 
-The starter app uses standard Material 3 ESM web components via [material-esm/material](https://github.com/material-esm/material) mapped to `material/` in the import map.
+The starter app styles everything with [Bootstrap 5.3](https://getbootstrap.com/docs/5.3/) (CSS from the CDN in `functions/layout.ts`) and [Bootstrap Icons](https://icons.getbootstrap.com/). Bootstrap's JS is available to components as `import { Modal, Toast, Tooltip } from 'bootstrap'`, mapped in the import map.
 
-### Critical Rule for AI
+### Rules
 
-- **Always use Material components from [https://github.com/material-esm/material/](https://github.com/material-esm/material/) if they are available before making our own.** Only build custom UI controls or components if a suitable component does not exist in `material-esm/material`.
-- **NEVER hand-roll custom UI controls** using standard HTML tags (`<button>`, `<select>`, `<input type="checkbox">`, `<input type="radio">`, custom modal `<div>`s, custom alerts, or custom switch toggle divs) when building or modifying user interfaces.
-- **ALWAYS use Material 3 components** via `import 'material/...'`.
-- **References**:
-  - GitHub repository: [https://github.com/material-esm/material/](https://github.com/material-esm/material/)
-  - Demo reference: [https://material-esm.github.io/material/demo/](https://material-esm.github.io/material/demo/) and `/demo` in the local app.
-
-### Components Reference & Imports
-
-| Component              | HTML Tag                                | Import Path                                                             | Common Attributes / Slots                                                                               |
-| :--------------------- | :-------------------------------------- | :---------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| **Buttons**            | `<md-button>`                           | `material/buttons/button.js`                                            | `color="filled                                                                                          | outlined                                        | tonal      | elevated                                                 | text"`, `size="extra-small | small                                         | medium | large"`, `shape="square"`, `<md-icon slot="icon">` |
-| **Button Groups**      | `<md-button-group>`                     | `material/buttons/button-group.js`                                      | `connected`, `checkmark`                                                                                |
-| **Split Buttons**      | `<md-split-button>`                     | `material/buttons/split-button.js`                                      | `color="filled                                                                                          | outlined"`, slot `menu`with`<md-menu-item>`     |
-| **FAB**                | `<md-fab>`                              | `material/buttons/fab.js`                                               | `variant="primary                                                                                       | secondary"`, `extended`, `lowered`, slot `icon` |
-| **Icon Buttons**       | `<md-icon-button>`                      | `material/buttons/icon-button.js`                                       | `color="tonal                                                                                           | filled"`, contains `<md-icon>`                  |
-| **Icons**              | `<md-icon>`                             | `material/icon/icon.js`                                                 | Text content is Material Symbol ligature, e.g. `<md-icon>check</md-icon>`                               |
-| **Text Fields**        | `<md-text-field>`                       | `material/text/text-field.js`                                           | `label`, `value`, `color="outlined                                                                      | filled"`, `type="text                           | email      | password                                                 | number                     | textarea"`, `error`, `error-text`, `required` |
-| **Dropdown Select**    | `<md-select>`                           | `material/select/select.js`<br>`material/select/select-option.js`       | Contains `<md-select-option value="...">` with `<div slot="headline">`                                  |
-| **Switches**           | `<md-switch>`                           | `material/switch/switch.js`                                             | `selected`, `icons`, `value`                                                                            |
-| **Checkboxes**         | `<md-checkbox>`                         | `material/checkbox/checkbox.js`                                         | `checked`, `indeterminate`                                                                              |
-| **Radio Buttons**      | `<md-radio>`                            | `material/radio/radio.js`                                               | `name`, `value`, `checked`                                                                              |
-| **Sliders**            | `<md-slider>`                           | `material/slider/slider.js`                                             | `labeled`, `ticks`, `min`, `max`, `step`, `value`, `range`, `value-start`, `value-end`                  |
-| **Tabs**               | `<md-tabs>`<br>`<md-tab>`               | `material/tabs/tabs.js`<br>`material/tabs/tab.js`                       | `@change`, `<md-tab type="primary                                                                       | secondary">`with`<md-icon slot="icon">`         |
-| **Cards**              | `<md-card>`                             | `material/card/card.js`                                                 | `type="outlined                                                                                         | filled                                          | elevated"` |
-| **Chips**              | `<md-chip-set>`<br>`<md-chip>`          | `material/chips/chip-set.js`<br>`material/chips/chip.js`                | `type="assist                                                                                           | filter                                          | input      | suggestion"`, `label`, `selected`, `avatar`, slot `icon` |
-| **Badges**             | `<md-badge>`                            | `material/badge/badge.js`                                               | `value="3"`, or empty for status dot                                                                    |
-| **Tooltips**           | `<md-tooltip>`                          | `material/tooltip/tooltip.js`                                           | `text="..."` (plain), or `type="rich"` with slots `headline`, `text`, `actions`                         |
-| **Dialogs**            | `<md-dialog>`                           | `material/dialog/dialog.js`                                             | Slots: `headline`, `content` (form with `method="dialog"`), `actions`. Call `.show()` and `.close()`    |
-| **Snackbars**          | `snack()`<br>`<md-snackbar>`            | `material/snackbar/snackbar.js`                                         | `snack('Message', { action: { label: 'Undo', onClick }, showCloseIcon: true })`                         |
-| **Loading & Progress** | `<md-loading>`<br>`<md-progress>`       | `material/indicators/loading.js`<br>`material/indicators/progress.js`   | `<md-loading contained size="...">`, `<md-progress type="circular                                       | linear" indeterminate shape="wavy">`            |
-| **Lists**              | `<md-list>`<br>`<md-list-item>`         | `material/list/list.js`<br>`material/list/list-item.js`                 | `headline`, `supporting-text`, slot `start`, slot `end`                                                 |
-| **Search**             | `<md-search>`                           | `material/search/search.js`                                             | `@input`, `placeholder`                                                                                 |
-| **Carousels**          | `<md-carousel>`<br>`<md-carousel-item>` | `material/carousel/carousel.js`<br>`material/carousel/carousel-item.js` | `layout="multi-browse"`, `indicators`, `loop`, contains `<md-carousel-item interactive headline="...">` |
-| **Dividers**           | `<md-divider>`                          | `material/divider/divider.js`                                           | Clean Material surface divider line                                                                     |
+- Prefer Bootstrap components and utilities over hand-rolled controls: `btn`, `form-control`, `form-select`, `form-switch`, `card`, `modal`, `dropdown`, `badge`, `alert`, `nav`.
+- Lit components extend `BsElement` (`public/components/bs-element.js`), which renders into the light DOM so Bootstrap's global CSS and `data-bs-*` attributes work. Do not use `static styles` or `<slot>` in them.
+- Use `this.modal('#id')` from `BsElement` to get a `Modal` instance. Use `snack(message)` from `/components/toast.js` for toasts and `<confirm-dialog>` for confirmations.
+- Icons are `<i class="bi bi-NAME"></i>`. `confirm-dialog`'s `icon` option takes a Bootstrap Icons name such as `trash`.
+- Dark mode follows `prefers-color-scheme` through `data-bs-theme` on `<html>`. Use theme-aware classes such as `text-body-secondary` and `bg-body-tertiary`, not fixed colors.
+- The layout helpers in `functions/css/styles.css.ts` (`flex`, `fcol`, `frow`, `aic`, `jcsb`, `g8`, `p16`, `mt8`, ...) sit alongside Bootstrap. `fcol`/`frow` set flex direction, so they do not collide with Bootstrap's grid `row`/`col`.
+- Browse the `/demo` page for the components in use.

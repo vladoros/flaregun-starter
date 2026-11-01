@@ -41,16 +41,16 @@ describe('Preview URL Cookie Clearing', () => {
     it('sets expired cookies for all candidate domains and host', () => {
       const setCookies = []
       // Mock window and document
-      const originalWindow = globalThis.window
-      const originalDocument = globalThis.document
+      const originalWindow = (globalThis as any).window
+      const originalDocument = (globalThis as any).document
 
-      globalThis.window = {
+      ;(globalThis as any).window = {
         location: {
           hostname: 'my-preview.orgname.workers.dev',
           href: '',
         },
       }
-      globalThis.document = {
+      ;(globalThis as any).document = {
         get cookie() {
           return 'session=abc; other_cookie=xyz'
         },
@@ -72,10 +72,10 @@ describe('Preview URL Cookie Clearing', () => {
 
         // Test signOut redirects to /signout
         signOut()
-        expect(globalThis.window.location.href).toBe('/signout')
+        expect((globalThis as any).window.location.href).toBe('/signout')
       } finally {
-        globalThis.window = originalWindow
-        globalThis.document = originalDocument
+        ;(globalThis as any).window = originalWindow
+        ;(globalThis as any).document = originalDocument
       }
     })
   })

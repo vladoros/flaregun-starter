@@ -1,100 +1,9 @@
-import { LitElement, html, css } from 'lit'
-import 'material/text/text-field.js'
-import 'material/buttons/button.js'
-import 'material/buttons/icon-button.js'
-import 'material/card/card.js'
-import 'material/icon/icon.js'
-import 'material/divider/divider.js'
+import { html } from 'lit'
 import '/components/confirm-dialog.js'
-import { styles } from '/css/styles.js'
 import { api } from 'api'
+import { BsElement } from '/components/bs-element.js'
 
-export class FlagsPage extends LitElement {
-  static styles = [
-    styles,
-    css`
-      :host {
-        display: block;
-        width: 100%;
-        max-width: 680px;
-        margin: 0 auto;
-      }
-      .flags-section {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      .flag-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-radius: 8px;
-        background: var(--md-sys-color-surface-container, rgba(0, 0, 0, 0.04));
-        border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
-      }
-      .flag-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .flag-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--md-sys-color-primary-container, #eaddff);
-        color: var(--md-sys-color-on-primary-container, #21005d);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .flag-name {
-        font-family: monospace;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--md-sys-color-on-surface, #1c1b1f);
-        word-break: break-all;
-      }
-      .feedback-msg {
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-      }
-      .feedback-success {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid #c8e6c9;
-      }
-      .feedback-error {
-        background: #ffebee;
-        color: #c62828;
-        border: 1px solid #ffcdd2;
-      }
-      md-icon-button.error {
-        --md-icon-button-icon-color: var(--error-color, var(--md-sys-color-error, #ba1a1a));
-      }
-      .add-flag-form {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .add-flag-form md-text-field {
-        flex: 1;
-        min-width: 240px;
-      }
-      .empty-state {
-        padding: 24px 16px;
-        text-align: center;
-        background: var(--md-sys-color-surface-container, rgba(0, 0, 0, 0.02));
-        border-radius: 8px;
-        color: var(--md-sys-color-on-surface-variant, #757575);
-      }
-    `,
-  ]
-
+export class FlagsPage extends BsElement {
   static properties = {
     user: { type: Object },
     loading: { type: Boolean },
@@ -110,6 +19,8 @@ export class FlagsPage extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback()
+    this.classList.add('d-block', 'w-100', 'mx-auto')
+    this.style.maxWidth = '680px'
     this.initUser()
     if (!this.user?.id) {
       await this.fetchUser()
@@ -171,7 +82,7 @@ export class FlagsPage extends LitElement {
   async addFlag(e) {
     if (e) e.preventDefault()
     if (this.loading) return
-    const input = this.renderRoot.querySelector('#new-flag-input')
+    const input = this.querySelector('#new-flag-input')
     const flagName = (input?.value || '').trim()
 
     if (!flagName) {
@@ -232,14 +143,14 @@ export class FlagsPage extends LitElement {
 
   async deleteFlag(flagName) {
     if (this.loading) return
-    const dialog = this.renderRoot.querySelector('#confirmDialog')
+    const dialog = this.querySelector('#confirmDialog')
     if (dialog) {
       const confirmed = await dialog.confirm({
         headline: 'Remove Flag',
         message: `Are you sure you want to remove flag "${flagName}"?`,
         confirmText: 'Remove',
         destructive: true,
-        icon: 'delete',
+        icon: 'trash',
       })
       if (!confirmed) return
     }
@@ -292,72 +203,73 @@ export class FlagsPage extends LitElement {
     return html`
       <confirm-dialog id="confirmDialog"></confirm-dialog>
 
-      <div class="flex col g24 w100">
-        <div class="headline-medium">Feature Flags</div>
+      <div class="flex fcol g24 w100">
+        <h1 class="fs-3 mb-0">Feature Flags</h1>
 
-        <md-card class="p24 w100" style="box-sizing: border-box;">
-          <div class="flags-section">
-            <div class="title-large">User Flags</div>
-            <div class="text-muted small">
+        <div class="card p24 w100">
+          <div class="flex fcol g16">
+            <div class="fs-5">User Flags</div>
+            <div class="text-body-secondary small">
               Manage custom feature flags for your user profile. These flags are stored in <code>user.data.flags</code>.
             </div>
 
-            ${
-              this.message
-                ? html`<div class="feedback-msg feedback-${this.message.type}">${this.message.text}</div>`
-                : ''
-            }
+            ${this.message
+              ? html`<div class="alert alert-${this.message.type === 'success' ? 'success' : 'danger'} py-2 mb-0" role="alert">
+                  ${this.message.text}
+                </div>`
+              : ''}
 
-            <form class="add-flag-form mt8" @submit=${this.addFlag}>
-              <md-text-field
+            <form class="flex g12 aic flexw mt8" @submit=${this.addFlag}>
+              <input
+                class="form-control"
+                style="flex: 1; min-width: 240px;"
                 id="new-flag-input"
-                label="Flag name"
-                placeholder="e.g. beta-feature"
+                aria-label="Flag name"
+                placeholder="Flag name, e.g. beta-feature"
                 ?disabled=${this.loading}
-                @keydown=${this.handleKeydown}>
-              </md-text-field>
-              <md-button type="button" ?disabled=${this.loading} @click=${this.addFlag}>
-                <md-icon slot="icon">add</md-icon>
-                Add Flag
-              </md-button>
+                @keydown=${this.handleKeydown} />
+              <button type="button" class="btn btn-primary" ?disabled=${this.loading} @click=${this.addFlag}>
+                <i class="bi bi-plus-lg"></i> Add Flag
+              </button>
             </form>
 
-            <md-divider class="mt8 mb8"></md-divider>
+            <hr class="my-2" />
 
-            <div class="title-medium mt8">Set Flags (${flags.length})</div>
+            <div class="fw-medium mt8">Set Flags (${flags.length})</div>
 
-            <div class="flex col g12">
-              ${
-                flags.length === 0
-                  ? html`
-                      <div class="empty-state">
-                        No flags set yet. Enter a flag name above and click "Add Flag" to enable one.
-                      </div>
-                    `
-                  : flags.map(
-                      (flag) => html`
-                        <div class="flag-item">
-                          <div class="flag-info">
-                            <div class="flag-icon">
-                              <md-icon>flag</md-icon>
-                            </div>
-                            <span class="flag-name">${flag}</span>
+            <div class="flex fcol g12">
+              ${flags.length === 0
+                ? html`
+                    <div class="p24 text-center bg-body-tertiary rounded text-body-secondary">
+                      No flags set yet. Enter a flag name above and click "Add Flag" to enable one.
+                    </div>
+                  `
+                : flags.map(
+                    (flag) => html`
+                      <div class="flex aic jcsb px-3 py-2 rounded bg-body-tertiary border">
+                        <div class="flex aic g12">
+                          <div
+                            class="rounded-circle bg-primary-subtle text-primary-emphasis flex aic jcc flex-shrink-0"
+                            style="width: 40px; height: 40px;">
+                            <i class="bi bi-flag"></i>
                           </div>
-                          <md-icon-button
-                            class="error"
-                            title="Delete Flag"
-                            aria-label="Delete ${flag}"
-                            ?disabled=${this.loading}
-                            @click=${() => this.deleteFlag(flag)}>
-                            <md-icon>delete</md-icon>
-                          </md-icon-button>
+                          <span class="font-monospace fw-semibold text-break">${flag}</span>
                         </div>
-                      `,
-                    )
-              }
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          title="Delete Flag"
+                          aria-label="Delete ${flag}"
+                          ?disabled=${this.loading}
+                          @click=${() => this.deleteFlag(flag)}>
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    `,
+                  )}
             </div>
           </div>
-        </md-card>
+        </div>
       </div>
     `
   }

@@ -32,7 +32,7 @@ function render(d) {
       import '/components/sign-in.js'
     </script>
 
-    <div class="flex col aic jcc p16 mt40">
+    <div class="flex fcol aic jcc p16 mt40">
       <div class="headline-medium mb24">Sign In</div>
       ${
         d.user

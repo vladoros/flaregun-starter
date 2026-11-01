@@ -2,7 +2,7 @@ import { html } from 'rend'
 
 export async function onRequestGet(c) {
   return await c.data.rend.html({
-    title: 'Material 3 Demo',
+    title: 'Bootstrap Demo',
     main: render,
   })
 }
@@ -10,11 +10,11 @@ export async function onRequestGet(c) {
 function render(d) {
   return html`
     <script type="module">
-      import '/components/material-demo.js'
+      import '/components/bootstrap-demo.js'
     </script>
 
-    <div class="flex col p16 mt12">
-      <material-demo></material-demo>
+    <div class="flex fcol p16 mt12">
+      <bootstrap-demo></bootstrap-demo>
     </div>
   `
 }

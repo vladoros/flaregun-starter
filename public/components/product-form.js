@@ -1,44 +1,9 @@
-import { LitElement, html, css } from 'lit'
-import 'material/text/text-field.js'
-import 'material/select/select.js'
-import 'material/select/select-option.js'
-import 'material/switch/switch.js'
-import 'material/slider/slider.js'
-import 'material/buttons/button.js'
-import 'material/card/card.js'
-import 'material/icon/icon.js'
-import 'material/indicators/progress.js'
-import { snack } from 'material/snackbar/snackbar.js'
-import { styles } from '/css/styles.js'
+import { html } from 'lit'
 import { api } from 'api'
+import { BsElement } from '/components/bs-element.js'
+import { snack } from '/components/toast.js'
 
-export class ProductForm extends LitElement {
-  static styles = [
-    styles,
-    css`
-      :host {
-        display: block;
-      }
-      .form-section-title {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--md-sys-color-on-surface-variant);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 4px;
-      }
-      .field-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 12px;
-        background: var(--md-sys-color-surface-container, rgba(0, 0, 0, 0.02));
-        border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
-        border-radius: 8px;
-      }
-    `,
-  ]
-
+export class ProductForm extends BsElement {
   static properties = {
     product: { type: Object },
     submitting: { type: Boolean },
@@ -54,6 +19,7 @@ export class ProductForm extends LitElement {
     this.discount = 0
     this.embedded = false
     this.showCancel = false
+    this._uid = `pf-${Math.random().toString(36).slice(2, 8)}`
   }
 
   updated(changedProperties) {
@@ -75,25 +41,27 @@ export class ProductForm extends LitElement {
     return this.product || {}
   }
 
+  field(name) {
+    return this.querySelector(`[name="${name}"]`)
+  }
+
   syncFields(p = this.getProductObj()) {
-    const nameEl = this.renderRoot?.getElementById('name')
-    if (nameEl) nameEl.value = p.name || ''
-    const descEl = this.renderRoot?.getElementById('description')
-    if (descEl) descEl.value = p.description || ''
-    const priceEl = this.renderRoot?.getElementById('price')
-    if (priceEl) priceEl.value = p.price !== undefined && p.price !== null ? String(p.price) : ''
-    const catEl = this.renderRoot?.getElementById('category')
-    if (catEl) catEl.value = p.data?.category || 'electronics'
-    const inStockEl = this.renderRoot?.getElementById('inStock')
-    if (inStockEl) inStockEl.selected = p.data?.inStock !== false
-    const discountEl = this.renderRoot?.getElementById('discount')
-    if (discountEl) discountEl.value = Number(p.data?.discount) || 0
+    const set = (name, prop, value) => {
+      const el = this.field(name)
+      if (el) el[prop] = value
+    }
+    set('name', 'value', p.name || '')
+    set('description', 'value', p.description || '')
+    set('price', 'value', p.price !== undefined && p.price !== null ? String(p.price) : '')
+    set('category', 'value', p.data?.category || 'electronics')
+    set('inStock', 'checked', p.data?.inStock !== false)
+    set('discount', 'value', Number(p.data?.discount) || 0)
   }
 
   resetForm() {
     this.product = {}
     this.discount = 0
-    const f = this.renderRoot?.getElementById('product-form')
+    const f = this.querySelector('form')
     if (f) f.reset()
     this.syncFields({})
   }
@@ -105,100 +73,111 @@ export class ProductForm extends LitElement {
   renderFormContent() {
     const p = this.getProductObj()
     const isEditing = Boolean(p.id)
+    const category = p.data?.category || 'electronics'
+    const categories = [
+      ['electronics', 'Electronics'],
+      ['apparel', 'Apparel'],
+      ['books', 'Books & Media'],
+      ['home', 'Home & Kitchen'],
+      ['accessories', 'Accessories'],
+    ]
 
     return html`
       <form
-        id="product-form"
         class="w100"
         @submit=${(e) => {
           e.preventDefault()
           this.submit()
         }}>
-        <div class="flex col g16">
-          <md-text-field
-            id="name"
-            label="Name"
-            value="${p.name || ''}"
-            required
-            minlength="2"
-            placeholder="e.g. Wireless Headphones"></md-text-field>
+        <div class="flex fcol g16">
+          <label class="form-label mb-0">
+            Name
+            <input
+              class="form-control mt-1"
+              name="name"
+              .value=${p.name || ''}
+              required
+              minlength="2"
+              placeholder="e.g. Wireless Headphones" />
+          </label>
 
-          <md-select id="category" label="Category" required>
-            <md-select-option
-              value="electronics"
-              ?selected=${!p.data?.category || p.data?.category === 'electronics'}>
-              <div slot="headline">Electronics</div>
-            </md-select-option>
-            <md-select-option value="apparel" ?selected=${p.data?.category === 'apparel'}>
-              <div slot="headline">Apparel</div>
-            </md-select-option>
-            <md-select-option value="books" ?selected=${p.data?.category === 'books'}>
-              <div slot="headline">Books & Media</div>
-            </md-select-option>
-            <md-select-option value="home" ?selected=${p.data?.category === 'home'}>
-              <div slot="headline">Home & Kitchen</div>
-            </md-select-option>
-            <md-select-option value="accessories" ?selected=${p.data?.category === 'accessories'}>
-              <div slot="headline">Accessories</div>
-            </md-select-option>
-          </md-select>
+          <label class="form-label mb-0">
+            Category
+            <select class="form-select mt-1" name="category" required>
+              ${categories.map(
+                ([value, label]) => html`<option value=${value} ?selected=${category === value}>${label}</option>`,
+              )}
+            </select>
+          </label>
 
-          <md-text-field
-            id="description"
-            label="Description"
-            value="${p.description || ''}"
-            placeholder="Brief description of the product"></md-text-field>
+          <label class="form-label mb-0">
+            Description
+            <input
+              class="form-control mt-1"
+              name="description"
+              .value=${p.description || ''}
+              placeholder="Brief description of the product" />
+          </label>
 
-          <md-text-field
-            id="price"
-            label="Price ($)"
-            value="${p.price ?? ''}"
-            required
-            type="number"
-            placeholder="1.0"
-            step="0.01"
-            min="0.01"
-            max="1000000"></md-text-field>
+          <label class="form-label mb-0">
+            Price ($)
+            <input
+              class="form-control mt-1"
+              name="price"
+              type="number"
+              .value=${String(p.price ?? '')}
+              required
+              placeholder="1.0"
+              step="0.01"
+              min="0.01"
+              max="1000000" />
+          </label>
 
-          <div class="field-row">
-            <div class="flex col g4">
-              <span style="font-weight: 500;">In Stock</span>
-              <span class="text-muted small">Show item as immediately available</span>
-            </div>
-            <md-switch id="inStock" ?selected=${p.data?.inStock !== false} icons></md-switch>
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="${this._uid}-inStock"
+              name="inStock"
+              ?checked=${p.data?.inStock !== false} />
+            <label class="form-check-label" for="${this._uid}-inStock">In Stock</label>
+            <div class="text-body-secondary small">Show item as immediately available</div>
           </div>
 
-          <div class="flex col g4">
+          <div class="flex fcol g4">
             <div class="flex jcsb aic">
-              <span style="font-weight: 500; font-size: 13px;">Discount</span>
-              <span class="text-muted small">${this.discount}% off</span>
+              <label class="form-label mb-0" for="${this._uid}-discount">Discount</label>
+              <span class="text-body-secondary small">${this.discount}% off</span>
             </div>
-            <md-slider
-              id="discount"
-              labeled
+            <input
+              type="range"
+              class="form-range"
+              id="${this._uid}-discount"
+              name="discount"
               min="0"
               max="75"
               step="5"
-              value="${this.discount}"
-              @change=${(e) => {
+              .value=${String(this.discount)}
+              @input=${(e) => {
                 this.discount = Number(e.target.value) || 0
-              }}></md-slider>
+              }} />
           </div>
 
-          ${this.submitting ? html`<md-progress type="linear" indeterminate shape="wavy"></md-progress>` : ''}
+          ${this.submitting ? html`<div class="progress" style="height: 4px;"><div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div></div>` : ''}
 
           <div class="flex jce g8 mt8">
             ${this.showCancel
               ? html`
-                  <md-button type="button" color="text" @click=${this.handleCancel} ?disabled=${this.submitting}>
+                  <button type="button" class="btn btn-link" @click=${this.handleCancel} ?disabled=${this.submitting}>
                     Cancel
-                  </md-button>
+                  </button>
                 `
               : ''}
-            <md-button type="button" color="filled" @click=${this.submit} ?disabled=${this.submitting}>
-              <md-icon slot="icon">${isEditing ? 'check' : 'save'}</md-icon>
+            <button type="submit" class="btn btn-primary" ?disabled=${this.submitting}>
+              <i class="bi bi-${isEditing ? 'check-lg' : 'save'}"></i>
               ${this.submitting ? 'Saving...' : isEditing ? 'Update Product' : 'Save Product'}
-            </md-button>
+            </button>
           </div>
         </div>
       </form>
@@ -210,32 +189,30 @@ export class ProductForm extends LitElement {
       return this.renderFormContent()
     }
     return html`
-      <md-card class="p16 w100 mb24" style="box-sizing: border-box;">
-        ${this.renderFormContent()}
-      </md-card>
+      <div class="card p16 w100 mb24">${this.renderFormContent()}</div>
     `
   }
 
   async submit() {
-    let f = this.renderRoot.getElementById('product-form')
+    const f = this.querySelector('form')
     if (!f.reportValidity()) return
 
     const current = this.getProductObj()
     const isEditing = Boolean(current.id)
-    const categoryEl = this.renderRoot.getElementById('category')
-    const inStockEl = this.renderRoot.getElementById('inStock')
-    const discountEl = this.renderRoot.getElementById('discount')
+    const categoryEl = this.field('category')
+    const inStockEl = this.field('inStock')
+    const discountEl = this.field('discount')
 
     this.submitting = true
     try {
       const payload = {
-        name: this.renderRoot.getElementById('name').value,
-        description: this.renderRoot.getElementById('description').value,
-        price: parseFloat(this.renderRoot.getElementById('price').value),
+        name: this.field('name').value,
+        description: this.field('description').value,
+        price: parseFloat(this.field('price').value),
         data: {
           ...(current.data || {}),
           category: categoryEl ? categoryEl.value : current.data?.category || 'electronics',
-          inStock: inStockEl ? inStockEl.selected : true,
+          inStock: inStockEl ? inStockEl.checked : true,
           discount: discountEl ? Number(discountEl.value) : this.discount,
         },
       }
@@ -248,7 +225,7 @@ export class ProductForm extends LitElement {
             product: payload,
           },
         })
-        snack('Product updated successfully!', { showCloseIcon: true })
+        snack('Product updated successfully!')
       } else {
         r = await api('/v1/products', {
           method: 'POST',
@@ -256,7 +233,7 @@ export class ProductForm extends LitElement {
             product: payload,
           },
         })
-        snack('Product saved successfully!', { showCloseIcon: true })
+        snack('Product saved successfully!')
       }
 
       this.product = r.product
@@ -270,7 +247,7 @@ export class ProductForm extends LitElement {
       }
     } catch (err) {
       console.error(err)
-      snack(err.message || 'Failed to save product', { showCloseIcon: true })
+      snack(err.message || 'Failed to save product')
     } finally {
       this.submitting = false
     }

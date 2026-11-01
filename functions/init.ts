@@ -33,7 +33,7 @@ function everyHourFunction(evt) {
  */
 export async function initRequest(c) {
   let rid = nanoid()
-  let ldata = {
+  let ldata: Record<string, unknown> = {
     requestId: rid,
   }
   let url

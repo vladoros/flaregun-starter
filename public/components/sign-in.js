@@ -1,43 +1,11 @@
-import { html, css, LitElement } from 'lit'
-import 'material/buttons/button.js'
-import 'material/text/text-field.js'
-import 'material/card/card.js'
+import { html } from 'lit'
 import { api } from 'api'
 import state from 'state'
 import { startRegistration, startAuthentication } from 'passkeys/public/js/auth.js'
-import { styles } from '/css/styles.js'
 import { signOut } from './auth-utils.js'
+import { BsElement } from '/components/bs-element.js'
 
-export class SignIn extends LitElement {
-  static styles = [
-    styles,
-    css`
-      :host {
-        display: block;
-        width: 100%;
-        max-width: 400px;
-      }
-      .divider {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 8px 0;
-      }
-      .divider::before,
-      .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--md-sys-color-outline-variant, #ccc);
-      }
-      .divider:not(:empty)::before {
-        margin-right: 0.75em;
-      }
-      .divider:not(:empty)::after {
-        margin-left: 0.75em;
-      }
-    `,
-  ]
-
+export class SignIn extends BsElement {
   static properties = {
     baseURL: { type: String },
     afterLoginHref: { type: String },
@@ -61,6 +29,8 @@ export class SignIn extends LitElement {
 
   connectedCallback() {
     super.connectedCallback()
+    this.classList.add('d-block', 'w-100')
+    this.style.maxWidth = '400px'
     if (this.user) {
       let u = this.user
       if (typeof u === 'string') {
@@ -103,38 +73,38 @@ export class SignIn extends LitElement {
   render() {
     let err = ''
     if (this.error) {
-      err = html`<div class="error mb16">${this.error.message}</div>`
+      err = html`<div class="alert alert-danger mb-0" role="alert">${this.error.message}</div>`
     }
 
     if (this.success) {
       return html`
-        <md-card class="p24 w100" style="box-sizing: border-box;">
+        <div class="card p24 w100">
           <div class="success">
             ${this.success.message}
             ${this.success.link ? html`<br /><br /><a href="${this.success.link}">Click to verify</a>` : ''}
           </div>
-        </md-card>
+        </div>
       `
     }
 
     if (this.isLoggedIn()) {
       if (!this.capable) {
         return html`
-          <md-card class="p24 w100" style="box-sizing: border-box;">
-            <div class="flex col g16 aic tac">
+          <div class="card p24 w100">
+            <div class="flex fcol g16 aic tac">
               ${err}
               <div>
                 You are signed in.<br /><br />
                 <a href="${this.afterLoginHref}">Continue to dashboard</a>.
               </div>
             </div>
-          </md-card>
+          </div>
         `
       }
 
       return html`
-        <md-card class="p24 w100" style="box-sizing: border-box;">
-          <div class="flex col g16 aic tac">
+        <div class="card p24 w100">
+          <div class="flex fcol g16 aic tac">
             ${err}
             ${
               this.hasPasskey
@@ -151,43 +121,49 @@ export class SignIn extends LitElement {
                   `
             }
             <div>
-              <md-button type="button" @click=${this.createPasskey}>Create Passkey</md-button>
+              <button type="button" class="btn btn-primary" @click=${this.createPasskey}>Create Passkey</button>
             </div>
           </div>
-        </md-card>
+        </div>
       `
     }
 
     return html`
-      <md-card class="p24 w100" style="box-sizing: border-box;">
+      <div class="card p24 w100">
         <form
-          id="signin-form"
           class="w100"
           @submit=${(e) => {
             e.preventDefault()
             this.emailStart()
           }}>
-          <div class="flex col g16">
+          <div class="flex fcol g16">
             ${err}
-            <md-text-field
-              label="Email"
-              type="email"
-              id="email"
-              @keyup=${this.keyUpHandler}
-              required
-              autocomplete="${this.capable ? 'webauthn' : 'email'}"></md-text-field>
-            <md-button type="button" @click=${this.emailStart} class="mt8">Continue</md-button>
+            <label class="form-label mb-0">
+              Email
+              <input
+                class="form-control mt-1"
+                type="email"
+                id="email"
+                @keyup=${this.keyUpHandler}
+                required
+                autocomplete="${this.capable ? 'webauthn' : 'email'}" />
+            </label>
+            <button type="button" class="btn btn-primary mt8" @click=${this.emailStart}>Continue</button>
             ${
               this.capable
                 ? html`
-                    <div class="divider text-muted small">OR</div>
-                    <md-button type="button" color="outlined" @click=${this.signin}>Sign in with Passkey</md-button>
+                    <div class="flex aic g12 text-body-secondary small">
+                      <hr class="flex-grow-1 m-0" />OR<hr class="flex-grow-1 m-0" />
+                    </div>
+                    <button type="button" class="btn btn-outline-primary" @click=${this.signin}>
+                      Sign in with Passkey
+                    </button>
                   `
                 : ''
             }
           </div>
         </form>
-      </md-card>
+      </div>
     `
   }
 
@@ -224,7 +200,7 @@ export class SignIn extends LitElement {
 
   async emailStart() {
     this.error = null
-    let emailF = this.renderRoot.getElementById('email')
+    let emailF = this.querySelector('#email')
     if (!emailF.reportValidity()) {
       return
     }

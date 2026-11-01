@@ -10,7 +10,7 @@ export default defineConfig((ctx) => {
       name,
       compatibilityDate: '2026-09-22',
       compatibilityFlags: ['global_fetch_strictly_public'],
-      entrypoint: './src/worker.js',
+      entrypoint: './src/worker.ts',
       previewUrls: true,
       placement: {
         mode: 'smart',

@@ -85,7 +85,7 @@ export async function seedProducts(c) {
   }
 }
 
-export async function getProducts(c, q = {}) {
+export async function getProducts(c, q: Record<string, any> = {}) {
   const userId = c.data.user?.id || null
   const where = Array.isArray(q.where)
     ? [['userId', '=', userId], ...q.where]

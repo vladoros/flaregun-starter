@@ -11,19 +11,14 @@ export async function layout(d) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/images/flaregun2.png" />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-          as="style"
-          onload="this.onload=null;this.rel='stylesheet'" />
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700&display=swap"
-          as="style"
-          onload="this.onload=null;this.rel='stylesheet'" />
-
+        <script>
+          const dark = matchMedia('(prefers-color-scheme: dark)')
+          const setTheme = () => (document.documentElement.dataset.bsTheme = dark.matches ? 'dark' : 'light')
+          setTheme()
+          dark.addEventListener('change', setTheme)
+        </script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11/font/bootstrap-icons.min.css" />
         <link rel="stylesheet" href="/css/styles.css" />
 
         <script type="importmap">
@@ -37,7 +32,8 @@ export async function layout(d) {
               "lit-element/lit-element.js": "https://cdn.jsdelivr.net/npm/lit-element@4/lit-element.js",
               "lit-html": "https://cdn.jsdelivr.net/npm/lit-html@3/lit-html.js",
               "lit-html/": "https://cdn.jsdelivr.net/npm/lit-html@3/",
-              "material/": "https://cdn.jsdelivr.net/gh/material-esm/material@3/",
+              "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3/dist/js/bootstrap.esm.min.js",
+              "@popperjs/core": "https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/esm/index.js",
               "api": "https://cdn.jsdelivr.net/gh/treeder/api@1/api.js",
               "state": "https://cdn.jsdelivr.net/gh/treeder/state@3/state.js",
               "models": "https://cdn.jsdelivr.net/gh/treeder/models@1/index.js",
@@ -50,7 +46,7 @@ export async function layout(d) {
         <script type="module">
           import '/components/avatar-menu.js'
         </script>
-        <div class="flex g12 jcsb mb20 topnav p16">
+        <div class="flex g12 jcsb mb20 topnav border-bottom p16">
           <div class="flex g16 aic flexw">
             <a href="/">
               <div class="flex g8 jcc aic">
@@ -58,11 +54,11 @@ export async function layout(d) {
                 <div class="title-large">Flaregun Starter Kit</div>
               </div>
             </a>
-            <div class="flex g8 aic">
-              <a href="/" class="nav-item ${d.path === '/' ? 'active' : ''}">Home</a>
-              <a href="/products" class="nav-item ${d.path?.startsWith('/products') ? 'active' : ''}">Products</a>
-              <a href="/demo" class="nav-item ${d.path === '/demo' ? 'active' : ''}">Components Demo</a>
-            </div>
+            <nav class="nav nav-pills g8 aic">
+              <a href="/" class="nav-link ${d.path === '/' ? 'active' : ''}">Home</a>
+              <a href="/products" class="nav-link ${d.path?.startsWith('/products') ? 'active' : ''}">Products</a>
+              <a href="/demo" class="nav-link ${d.path === '/demo' ? 'active' : ''}">Components Demo</a>
+            </nav>
           </div>
           <div class="flex g8 jcc aic">
             <div>

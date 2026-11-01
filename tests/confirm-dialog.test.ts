@@ -7,14 +7,12 @@ test('confirm-dialog component is served and structured properly', async () => {
   const code = await res.text()
 
   expect(code).toContain("customElements.define('confirm-dialog', ConfirmDialog)")
-  expect(code).toContain("import 'material/dialog/dialog.js'")
-  expect(code).toContain("import 'material/buttons/button.js'")
-  expect(code).toContain("import 'material/icon/icon.js'")
-  expect(code).toContain('<md-dialog')
-  expect(code).toContain('@close=${this._handleClose}')
-  expect(code).toContain('@cancel=${this._handleCancel}')
+  expect(code).toContain("import { BsElement } from '/components/bs-element.js'")
+  expect(code).toContain('class="modal fade"')
+  expect(code).toContain('hidden.bs.modal')
   expect(code).toContain('confirm(options = {})')
   expect(code).toContain('static async confirm(options = {})')
+  expect(code).not.toContain('md-')
 })
 
 test('product-list component uses confirm-dialog for delete confirmation', async () => {

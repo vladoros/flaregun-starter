@@ -26,7 +26,7 @@ async function handleUpdate(c) {
   if (!user || typeof user !== 'object' || Array.isArray(user)) {
     throw new APIError('Bad Request: user payload required', { status: 400 })
   }
-  const updates = {}
+  const updates: Record<string, any> = {}
   if (user.name !== undefined) updates.name = user.name
   if (user.image !== undefined) updates.image = user.image
   if (user.age !== undefined) updates.age = user.age

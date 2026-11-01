@@ -1,29 +1,7 @@
-import { LitElement, html, css } from 'lit'
-import 'material/dialog/dialog.js'
-import 'material/buttons/button.js'
-import 'material/icon/icon.js'
-import { styles } from '/css/styles.js'
+import { html } from 'lit'
+import { BsElement } from '/components/bs-element.js'
 
-export class ConfirmDialog extends LitElement {
-  static styles = [
-    styles,
-    css`
-      :host {
-        display: contents;
-      }
-      md-button.error,
-      md-button.destructive {
-        --md-button-container-color: var(--error-color, var(--md-sys-color-error, #ba1a1a));
-        --md-button-label-text-color: var(--md-sys-color-on-error, #ffffff);
-        --md-sys-color-primary: var(--error-color, var(--md-sys-color-error, #ba1a1a));
-        --md-sys-color-on-primary: var(--md-sys-color-on-error, #ffffff);
-      }
-      .dialog-icon {
-        font-size: 28px;
-      }
-    `,
-  ]
-
+export class ConfirmDialog extends BsElement {
   static properties = {
     open: { type: Boolean, reflect: true },
     headline: { type: String },
@@ -52,6 +30,11 @@ export class ConfirmDialog extends LitElement {
     try {
       return await dialog.confirm(options)
     } finally {
+      // Removing mid-fade would leave Bootstrap's backdrop behind.
+      await new Promise((done) => {
+        dialog.addEventListener('hidden.bs.modal', done, { once: true })
+        setTimeout(done, 600)
+      })
       dialog.remove()
     }
   }
@@ -76,12 +59,8 @@ export class ConfirmDialog extends LitElement {
     return this
   }
 
-  close(returnValue = '') {
+  close() {
     this.open = false
-    const mdDialog = this.renderRoot?.querySelector('md-dialog')
-    if (mdDialog?.open) {
-      mdDialog.close(returnValue)
-    }
   }
 
   confirm(options = {}) {
@@ -123,34 +102,42 @@ export class ConfirmDialog extends LitElement {
     }
   }
 
-  _handleCancel(e) {
-    this.dispatchEvent(new CustomEvent('cancel', { bubbles: true, composed: true }))
-    this._handleClose(e)
+  firstUpdated() {
+    this.addEventListener('hidden.bs.modal', (e) => this._handleClose(e))
+  }
+
+  updated(changed) {
+    if (!changed.has('open')) return
+    const modal = this.modal('.modal')
+    if (this.open) modal?.show()
+    else modal?.hide()
   }
 
   render() {
     return html`
-      <md-dialog ?open=${this.open} @close=${this._handleClose} @cancel=${this._handleCancel}>
-        ${
-          this.icon
-            ? html`<md-icon slot="icon" class="dialog-icon ${this.destructive ? 'error' : ''}">${this.icon}</md-icon>`
-            : ''
-        }
-        <div slot="headline">
-          <slot name="headline">${this.headline}</slot>
+      <div class="modal fade" tabindex="-1" aria-labelledby="confirm-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title flex aic g8" id="confirm-title">
+                ${this.icon ? html`<i class="bi bi-${this.icon} ${this.destructive ? 'text-danger' : ''}"></i>` : ''}
+                ${this.headline}
+              </h5>
+              <button type="button" class="btn-close" aria-label="Close" @click=${this._onCancel}></button>
+            </div>
+            <div class="modal-body">${this.message}</div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" @click=${this._onCancel}>${this.cancelText}</button>
+              <button
+                type="button"
+                class="btn ${this.destructive ? 'btn-danger' : 'btn-primary'}"
+                @click=${this._onConfirm}>
+                ${this.confirmText}
+              </button>
+            </div>
+          </div>
         </div>
-        <div slot="content">
-          <slot>${this.message}</slot>
-        </div>
-        <div slot="actions">
-          <slot name="actions">
-            <md-button color="text" @click=${this._onCancel}>${this.cancelText}</md-button>
-            <md-button color="filled" class=${this.destructive ? 'error' : ''} @click=${this._onConfirm}>
-              ${this.confirmText}
-            </md-button>
-          </slot>
-        </div>
-      </md-dialog>
+      </div>
     `
   }
 }

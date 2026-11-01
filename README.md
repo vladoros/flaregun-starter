@@ -12,7 +12,7 @@ Out of the box, this includes:
 - API endpoints
 - queues
 - scheduler
-- material 3 web components
+- Bootstrap 5 with Lit web components
 - email and passkey authentication
 
 It's easy to add and remove things since it's mostly just standard JavaScript.
@@ -47,7 +47,7 @@ Try making some changes and see it update in real-time!
 
 ### Schema / migrations
 
-Define models [models](https://github.com/treeder/models) in the [data](./functions/data) folder, then add the class to [migrations.js](./functions/data/migrations.js) to automatically keep your database schema up to date.
+Define models [models](https://github.com/treeder/models) in the [data](./functions/data) folder, then add the class to [migrations.ts](./functions/data/migrations.ts) to automatically keep your database schema up to date.
 
 ### Using the database
 
@@ -74,13 +74,13 @@ See the [D1 docs](https://github.com/treeder/flaregun/blob/main/README.md#d1-sql
 
 ## Layout
 
-Edit [layout.js](./functions/layout.js) to update the layout of your app.
+Edit [layout.ts](./functions/layout.ts) to update the layout of your app.
 
 ## Routes
 
 This uses file based routing from [Cloudflare Pages Functions](https://developers.cloudflare.com/pages/functions/routing/), but runs on Workers because Pages Functions are deprecated.
 
-To add a new route, just add a new file to the functions directory and that will be your route. For instance, if you add a file called `hello.js`, it will be available at
+To add a new route, just add a new file to the functions directory and that will be your route. For instance, if you add a file called `hello.ts`, it will be available at
 `/hello`.
 
 For UI endpoints:
@@ -111,20 +111,20 @@ export async function onRequestGet(c) {
 
 ## Scheduler
 
-The [scheduled.js](functions/scheduled.js) file will run every minute by default (after your first deployment).
+The [scheduled.ts](functions/scheduled.ts) file will run every minute by default (after your first deployment).
 
-To disable scheduling, delete the scheduled.js file and remove the triggers from cloudflare.config.ts.
+To disable scheduling, delete the scheduled.ts file and remove the triggers from cloudflare.config.ts.
 
 NOTE: There are some small gotchas here:
 
 - This won't run any middleware, so you'll have to do any initialization you need in the scheduled function.
-- To import something like a class or function in scheduled.js, it must also be used elsewhere in your app.
+- To import something like a class or function in scheduled.ts, it must also be used elsewhere in your app.
 
 That's about it, otherwise, should work as is!
 
 ## Queues
 
-The [queue.js](functions/queue.js) file will run whenever you post a message to the queue.
+The [queue.ts](functions/queue.ts) file will run whenever you post a message to the queue.
 
 To post a message:
 
@@ -132,7 +132,7 @@ To post a message:
 await c.env.QUEUE.send({ message: 'Hello, world!' })
 ```
 
-Your queue.js handler will get the message shortly.
+Your queue.ts handler will get the message shortly.
 
 To delay the message:
 
