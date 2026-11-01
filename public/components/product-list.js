@@ -2,7 +2,6 @@ import { html } from 'lit'
 import '/components/confirm-dialog.js'
 import '/components/product-form.js'
 import { api } from 'api'
-import state from 'state'
 import { BsElement } from '/components/bs-element.js'
 import { snack } from '/components/toast.js'
 
@@ -43,36 +42,19 @@ export class ProductList extends BsElement {
     window.removeEventListener('product-saved', this.onProductSaved)
   }
 
-  async checkAuth() {
-    if (!this.isLoggedIn() && typeof document !== 'undefined' && /(?:^|;\s*)session=/.test(document.cookie)) {
-      try {
-        const res = await api('/v1/users/me')
-        if (res?.user) {
-          this.user = res.user
-          this.canManage = true
-        }
-      } catch (e) {}
-    }
-  }
 
-  getUser() {
-    if (typeof this.user === 'string') {
-      if (!this.user) return state.get('user') || {}
-      try {
-        return JSON.parse(this.user)
-      } catch (e) {
-        return state.get('user') || {}
-      }
+
+
+  async checkAuth() {
+    const user = await this.fetchSessionUser()
+    if (user) {
+      this.user = user
+      this.canManage = true
     }
-    if (this.user && (this.user.id || this.user.email)) {
-      return this.user
-    }
-    return state.get('user') || {}
   }
 
   isLoggedIn() {
-    const u = this.getUser()
-    return Boolean(this.canManage || u.id || u.email)
+    return Boolean(this.canManage || super.isLoggedIn())
   }
 
   async fetchData() {

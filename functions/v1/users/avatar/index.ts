@@ -11,9 +11,23 @@ const ALLOWED_IMAGE_TYPES = new Map([
   ['image/gif', 'gif'],
 ])
 
+// Only delete keys under the user's own folder, since `image` can be set to any string through /v1/users/me.
+async function deleteOldAvatar(c, image) {
+  const key = String(image || '').replace(/^\/r2\//, '')
+  if (key.startsWith(`users/${c.data.user.id}/`)) {
+    await c.env.R2.delete(key)
+  }
+}
+
 export async function onRequestPost(c) {
   if (!c.data.user) {
     throw new APIError('Unauthorized', { status: 401 })
+  }
+
+  const maxBytes = 10 * 1024 * 1024 // 10MB
+  // Reject before formData() buffers the whole body in memory.
+  if (Number(c.request.headers.get('content-length')) > maxBytes + 64 * 1024) {
+    throw new APIError('File size exceeds 10MB limit', { status: 413 })
   }
 
   let formData
@@ -33,7 +47,6 @@ export async function onRequestPost(c) {
     throw new APIError('Only JPG, PNG, WEBP, AVIF, and GIF image files are allowed', { status: 400 })
   }
 
-  const maxBytes = 10 * 1024 * 1024 // 10MB
   if (file.size && file.size > maxBytes) {
     throw new APIError('File size exceeds 10MB limit', { status: 400 })
   }
@@ -62,6 +75,7 @@ export async function onRequestPost(c) {
     })
   } else {
     await c.data.d1.update(User, c.data.user.id, { image })
+    await deleteOldAvatar(c, existing.image)
   }
 
   const updated = await c.data.d1.get(User, c.data.user.id)
@@ -76,6 +90,7 @@ export async function onRequestDelete(c) {
   const existing = await c.data.d1.get(User, c.data.user.id)
   if (existing) {
     await c.data.d1.update(User, c.data.user.id, { image: null })
+    await deleteOldAvatar(c, existing.image)
   }
 
   const updated = await c.data.d1.get(User, c.data.user.id)

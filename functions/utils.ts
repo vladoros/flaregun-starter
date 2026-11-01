@@ -1,3 +1,9 @@
+import { APIError } from 'api'
+
+export const MAX_JSON_CHARS = 10_000 // cap for user-supplied `data` objects
+
+const TWO_PART_TLD = /\.(co|com|org|net|edu|gov)\.[a-z]{2}$/
+
 function stripPort(h) {
   if (!h) return ''
   if (h.startsWith('[')) {
@@ -58,6 +64,19 @@ export function hostURL(c) {
   return h
 }
 
+/** True for a same-site path such as /products, false for https://evil.example or //evil.example. */
+export function isLocalPath(p) {
+  return typeof p === 'string' && p.startsWith('/') && !p.startsWith('//') && !p.startsWith('/\\')
+}
+
+export async function readJson(c) {
+  try {
+    return await c.request.json()
+  } catch (e) {
+    throw new APIError('Invalid JSON body', { status: 400 })
+  }
+}
+
 export function escapeHtml(str) {
   if (str === null || str === undefined) return ''
   return String(str)
@@ -72,7 +91,7 @@ export function domainLevels(c) {
   if (!c) return 2
   const host = typeof c === 'string' ? c : hostname(c)
   if (!host) return 2
-  return host.endsWith('.workers.dev') || host.endsWith('.pages.dev') ? 3 : 2
+  return host.endsWith('.workers.dev') || host.endsWith('.pages.dev') || TWO_PART_TLD.test(host) ? 3 : 2
 }
 
 export function getCookieDomainCandidates(cOrHost) {
@@ -90,7 +109,7 @@ export function getCookieDomainCandidates(cOrHost) {
   }
   const parts = cleanHost.split('.')
   const isWorkersOrPages = cleanHost.endsWith('.workers.dev') || cleanHost.endsWith('.pages.dev')
-  const isTwoPartTld = /\.(co|com|org|net|edu|gov)\.[a-z]{2}$/.test(cleanHost)
+  const isTwoPartTld = TWO_PART_TLD.test(cleanHost)
   const minLevels = isWorkersOrPages || isTwoPartTld ? 3 : 2
 
   const domains = []

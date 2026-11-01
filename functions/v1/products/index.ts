@@ -1,4 +1,5 @@
-import { Product, getProducts } from '../../data/products.js'
+import { Product, getProducts, productError } from '../../data/products.js'
+import { readJson } from '../../utils.js'
 
 export async function onRequestGet(c) {
   let products = await getProducts(c)
@@ -10,7 +11,7 @@ export async function onRequestPost(c) {
     return Response.json({ error: { message: 'Authentication required to create products' } }, { status: 401 })
   }
 
-  let input = await c.request.json()
+  let input = await readJson(c)
   let product = input?.product
   if (!product || typeof product !== 'object' || Array.isArray(product) || !String(product.name || '').trim()) {
     return Response.json({ error: { message: 'Valid product payload with a name is required' } }, { status: 400 })
@@ -27,6 +28,9 @@ export async function onRequestPost(c) {
       createdBy: c.data.user.id,
     },
   }
+
+  const error = productError(record)
+  if (error) return Response.json({ error: { message: error } }, { status: 400 })
 
   await c.data.d1.insert(Product, record)
   return Response.json({ product: record })

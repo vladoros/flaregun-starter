@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { onRequestGet, onRequestPost } from '../functions/signout.js'
+import { onRequest } from '../functions/signout.js'
 import { getCookieDomainCandidates, clearClientCookies, signOut } from '../public/components/auth-utils.js'
 
 describe('Preview URL Cookie Clearing', () => {
@@ -91,7 +91,7 @@ describe('Preview URL Cookie Clearing', () => {
         }),
       }
 
-      const res = await onRequestGet(c)
+      const res = await onRequest(c)
       expect(res.status).toBe(302)
       expect(res.headers.get('Location')).toBe('/')
 
@@ -124,7 +124,7 @@ describe('Preview URL Cookie Clearing', () => {
         }),
       }
 
-      const res = await onRequestPost(c)
+      const res = await onRequest(c)
       expect(res.status).toBe(302)
       expect(res.headers.get('Location')).toBe('/')
       const setCookies = res.headers.getSetCookie?.() || []

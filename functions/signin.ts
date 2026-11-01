@@ -1,5 +1,5 @@
 import { html, stringifyAttribute } from 'rend'
-import { escapeHtml } from './utils.js'
+import { escapeHtml, isLocalPath } from './utils.js'
 
 export async function onRequestGet(c) {
   let afterLoginHref = '/'
@@ -7,12 +7,7 @@ export async function onRequestGet(c) {
     try {
       const url = new URL(c.request.url)
       const redirect = url.searchParams.get('redirect')
-      if (
-        redirect &&
-        redirect.startsWith('/') &&
-        !redirect.startsWith('//') &&
-        !redirect.startsWith('/\\')
-      ) {
+      if (isLocalPath(redirect)) {
         afterLoginHref = escapeHtml(redirect)
       }
     } catch (e) {}

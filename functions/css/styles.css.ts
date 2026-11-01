@@ -32,21 +32,15 @@ export function root(d) {
 
 export function all(d?: any) {
   return css`
-    .green,
     .success {
       color: var(--bs-success);
     }
 
-    .red,
     .error {
       color: var(--bs-danger);
     }
 
     .flex {
-      display: flex;
-    }
-
-    .flexr {
       display: flex;
     }
 
@@ -57,48 +51,6 @@ export function all(d?: any) {
 
     .grid {
       display: grid;
-    }
-
-    /* Medium window breakpoint */
-    @media (width < 840px) {
-      .flexr {
-        flex-direction: column;
-      }
-
-      .mobOrder1 {
-        order: -100;
-      }
-
-      .mobOrder2 {
-        order: -50;
-      }
-
-      .mobOrder3 {
-        order: -20;
-      }
-
-      .lteMedium {
-        display: block;
-      }
-
-      .gtMedium {
-        /* aka expanded */
-        display: none;
-      }
-    }
-
-    @media (width >=840px) {
-      .gtMedium {
-        display: block;
-      }
-
-      .lteMedium {
-        display: none;
-      }
-    }
-
-    .frow {
-      flex-direction: row;
     }
 
     .fcol {
@@ -113,10 +65,6 @@ export function all(d?: any) {
       justify-content: space-between;
     }
 
-    .jcse {
-      justify-content: space-evenly;
-    }
-
     .jce {
       justify-content: end;
     }
@@ -124,19 +72,6 @@ export function all(d?: any) {
     .aic {
       align-items: center;
     }
-
-    .rc4 {
-      border-radius: 4px;
-    }
-
-    .a2 {
-      text-decoration: none;
-      color: white;
-    }
-
-    /* .a2:hover {
-    text-decoration: underline;
-  } */
 
     .g8 {
       gap: 8px;
@@ -161,15 +96,6 @@ export function all(d?: any) {
       gap: 32px;
     }
 
-    .p4 {
-      padding: 4px;
-    }
-    .p8 {
-      padding: 8px;
-    }
-    .p12 {
-      padding: 12px;
-    }
     .p16 {
       padding: 16px;
     }
@@ -183,13 +109,6 @@ export function all(d?: any) {
     .pt12 {
       padding-top: 12px;
     }
-    .pt40 {
-      padding-top: 40px;
-    }
-
-    .pb40 {
-      padding-bottom: 40px;
-    }
 
     .mt8 {
       margin-top: 8px;
@@ -199,30 +118,8 @@ export function all(d?: any) {
       margin-top: 12px;
     }
 
-    .mt16 {
-      margin-top: 16px;
-    }
-
     .mt20 {
       margin-top: 20px;
-    }
-
-    .mt24 {
-      margin-top: 24px;
-    }
-    .mt32 {
-      margin-top: 32px;
-    }
-    .mt48 {
-      margin-top: 48px;
-    }
-
-    .mb8 {
-      margin-bottom: 8px;
-    }
-
-    .mb12 {
-      margin-bottom: 12px;
     }
 
     .mb16 {
@@ -245,38 +142,12 @@ export function all(d?: any) {
       width: 100%;
     }
 
-    .br4 {
-      border-radius: 4px;
-    }
-
-    .br8 {
-      border-radius: 8px;
-    }
-    .br50 {
-      border-radius: 50%;
-    }
-    .wh36 {
-      height: 36px;
-      width: 36px;
-    }
-
     ${typography()}
   `
 }
 
 function typography() {
   return css`
-    .display-medium {
-      font-weight: 400;
-      font-size: 45px;
-      line-height: 52px;
-    }
-
-    .headline-small {
-      font-weight: 400;
-      font-size: 24px;
-      line-height: 32px;
-    }
     .headline-medium {
       font-weight: 400;
       font-size: 28px;

@@ -1,4 +1,5 @@
-import { Product, getProduct } from '../../../data/products.js'
+import { Product, getProduct, productError } from '../../../data/products.js'
+import { readJson } from '../../../utils.js'
 
 export async function onRequestGet(c) {
   let product = await getProduct(c, c.params.id)
@@ -22,7 +23,7 @@ async function handleUpdate(c) {
     return Response.json({ error: { message: 'Forbidden: you can only update your own products' } }, { status: 403 })
   }
 
-  let input = await c.request.json()
+  let input = await readJson(c)
   let payload = input?.product
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     return Response.json({ error: { message: 'Valid product payload is required' } }, { status: 400 })
@@ -46,6 +47,9 @@ async function handleUpdate(c) {
       updatedBy: c.data.user.id,
     }
   }
+
+  const error = productError(updates)
+  if (error) return Response.json({ error: { message: error } }, { status: 400 })
 
   await c.data.d1.update(Product, productId, updates)
   const product = await c.data.d1.get(Product, productId)

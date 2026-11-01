@@ -28,5 +28,3 @@ async function handleSignOut(c) {
 }
 
 export const onRequest = handleSignOut
-export const onRequestGet = handleSignOut
-export const onRequestPost = handleSignOut

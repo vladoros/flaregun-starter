@@ -1,6 +1,5 @@
 import { html } from 'lit'
 import 'bootstrap'
-import { api } from 'api'
 import state from 'state'
 import { signOut } from './auth-utils.js'
 import { BsElement } from '/components/bs-element.js'
@@ -25,15 +24,13 @@ export class AvatarMenu extends BsElement {
     const initialUser = this.parseUser(this.user)
     if (initialUser && (initialUser.id || initialUser.email)) {
       state.set('user', initialUser, { skipStorage: true })
-    } else if (!this.isLoggedIn() && /(?:^|;\s*)session=/.test(document.cookie)) {
-      try {
-        const res = await api('/v1/users/me')
-        if (res?.user) {
-          this.user = res.user
-          state.set('user', res.user, { skipStorage: true })
-          this.requestUpdate()
-        }
-      } catch (e) {}
+    } else {
+      const user = await this.fetchSessionUser()
+      if (user) {
+        this.user = user
+        state.set('user', user, { skipStorage: true })
+        this.requestUpdate()
+      }
     }
   }
 
@@ -42,29 +39,8 @@ export class AvatarMenu extends BsElement {
     state.removeEventListener('user', this.onUserChange)
   }
 
-  isLoggedIn() {
-    const user = this.getUser()
-    return !!(user.id || user.email)
-  }
 
-  parseUser(u) {
-    if (typeof u === 'string') {
-      try {
-        return JSON.parse(u)
-      } catch (e) {
-        return {}
-      }
-    }
-    return u || {}
-  }
 
-  getUser() {
-    const u = this.parseUser(this.user)
-    if (u && (u.id || u.email)) {
-      return u
-    }
-    return state.get('user') || {}
-  }
 
   async handleSignOut(e) {
     e?.preventDefault()

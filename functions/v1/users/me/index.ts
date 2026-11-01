@@ -1,5 +1,6 @@
 import { APIError } from 'api'
 import { User } from '../../../data/users.js'
+import { MAX_JSON_CHARS, readJson } from '../../../utils.js'
 
 export async function onRequestGet(c) {
   if (!c.data.user) throw new APIError('Unauthorized', { status: 401 })
@@ -21,10 +22,16 @@ export async function onRequestPost(c) {
 
 async function handleUpdate(c) {
   if (!c.data.user) throw new APIError('Unauthorized', { status: 401 })
-  const input = await c.request.json()
+  const input = await readJson(c)
   const user = input?.user
   if (!user || typeof user !== 'object' || Array.isArray(user)) {
     throw new APIError('Bad Request: user payload required', { status: 400 })
+  }
+  if (user.name !== undefined && String(user.name).length > 200) {
+    throw new APIError('Bad Request: name is too long (max 200 characters)', { status: 400 })
+  }
+  if (user.data !== undefined && JSON.stringify(user.data).length > MAX_JSON_CHARS) {
+    throw new APIError('Bad Request: data is too large', { status: 400 })
   }
   const updates: Record<string, any> = {}
   if (user.name !== undefined) updates.name = user.name
